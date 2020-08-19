@@ -12,4 +12,4 @@ facelibrary/.externalNativeBuild
 facelibrary/build
 
 *.apk
-/signature/
+signature/
