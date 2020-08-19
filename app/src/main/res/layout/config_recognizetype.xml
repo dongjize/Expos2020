@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="310dp"
+    android:background="@drawable/sr_liner_tr_radious"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/sr_liner_tr_radious"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <View
+                    android:id="@+id/trliner"
+                    android:layout_width="match_parent"
+                    android:layout_height="0.3dp"
+                    android:layout_marginTop="50dp"
+                    android:background="#333333"></View>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="50dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/crtIdphoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginLeft="20dp"
+                        android:button="@drawable/sr_radio_button__selector"
+                        android:paddingLeft="10dp"
+                        android:text="RGB(证件照)"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"></RadioButton>
+
+                    <Button
+                        android:id="@+id/cwIdPhoto"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginLeft="10dp"
+                        android:background="@mipmap/icon_setting_question"></Button>
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/idphootoliner"
+                    android:layout_width="match_parent"
+                    android:layout_height="0.3dp"
+                    android:layout_marginTop="100dp"
+                    android:background="#333333"></View>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="100dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/crtLivephoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:button="@drawable/sr_radio_button__selector"
+                        android:paddingLeft="10dp"
+                        android:text="RGB(生活照)"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"></RadioButton>
+
+                    <Button
+                        android:id="@+id/cwLivePhoto"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginLeft="10dp"
+                        android:background="@mipmap/icon_setting_question"></Button>
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/livephootoliner"
+                    android:layout_width="match_parent"
+                    android:layout_height="0.3dp"
+                    android:layout_marginTop="150dp"
+                    android:background="#333333"></View>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="150dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:alpha="0.39"
+                        android:button="@drawable/sr_radio_button__selector"
+                        android:enabled="false"
+                        android:paddingLeft="10dp"
+                        android:text="NIR(即将推出)"
+                        android:textColor="#ffffff"
+                        android:textSize="20sp"></RadioButton>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.3dp"
+                    android:layout_marginTop="200dp"
+                    android:background="#333333"></View>
+
+
+                <LinearLayout
+                    android:id="@+id/rgbAndDepth"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="200dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:alpha="0.39"
+                        android:button="@drawable/sr_radio_button__selector"
+                        android:enabled="false"
+                        android:paddingLeft="10dp"
+                        android:text="RGB+Depth(即将推出)"
+                        android:textColor="#ffffff"
+                        android:textSize="20sp"></RadioButton>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/showIdText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/idphootoliner"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/cw_round"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/cwShowIdText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:lineSpacingExtra="6dp"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"></TextView>
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/linerBoRgbAndDepth"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_below="@+id/rgbAndDepth"
+                    android:background="@color/black"></View>
+
+                <LinearLayout
+                    android:id="@+id/showLiveText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/livephootoliner"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/cw_round"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/cwShowLiveText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/cw_round"
+                        android:padding="10dp"
+                        android:textColor="@color/white"
+                        android:lineSpacingExtra="6dp"
+                        android:textSize="14sp"></TextView>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/configPopREBack"
+                    android:layout_below="@+id/linerBoRgbAndDepth"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="关闭"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"></TextView>
+                </LinearLayout>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/showRMText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/cw_round"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/cwRMText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/cw_round"
+                    android:padding="10dp"
+                    android:lineSpacingExtra="6dp"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"></TextView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="识别模型和模态"
+                    android:textColor="#999999"
+                    android:textSize="15sp"></TextView>
+
+                <ImageView
+                    android:id="@+id/cwRecgnizeModel"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:src="@mipmap/icon_setting_question"></ImageView>
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

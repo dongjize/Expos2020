@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/depth_Rl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.baidu.idl.face.main.activity.testimony.FaceDepthTestimonyActivity">
+
+    <include
+        android:id="@+id/depth_title"
+        layout="@layout/layout_title_gate" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/depth_title">
+
+        <com.baidu.idl.face.main.camera.AutoTexturePreviewView
+            android:id="@+id/auto_camera_preview_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextureView
+            android:id="@+id/draw_detect_face_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:id="@+id/mongolia_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!--         Depth 预览图-->
+
+        <RelativeLayout
+            android:id="@+id/depth_test_Rl"
+            android:layout_width="110dp"
+            android:layout_height="82.7dp"
+            android:layout_above="@+id/depth_buttomLl_All"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/start_10"
+            android:layout_marginBottom="5.1dp"
+            android:background="#B3000000"
+            android:visibility="gone">
+
+            <org.openni.android.OpenNIView
+                android:id="@+id/depth_camera_preview_view"
+                android:layout_width="110dp"
+                android:layout_height="82.7dp"
+                android:layout_alignParentRight="true" />
+
+            <ImageView
+                android:id="@+id/depth_test_view"
+                android:layout_width="1dp"
+                android:layout_height="1dp"
+                android:layout_alignParentRight="true" />
+
+            <RelativeLayout
+                android:layout_width="110dp"
+                android:layout_height="22.7dp"
+                android:layout_alignParentBottom="true"
+                android:background="#B3000000"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="23dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginLeft="5dp"
+                    android:text="Depth图片帧"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:visibility="gone"
+                    android:layout_gravity="center"
+                    android:id="@+id/depth_test_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ic_icon_develop_success"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginLeft="5dp" />
+
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <!--         RGB 检测图片测试-->
+
+        <RelativeLayout
+            android:id="@+id/rgb_depth_test_Ll"
+            android:layout_width="110dp"
+            android:layout_height="82.7dp"
+            android:layout_above="@+id/depth_buttomLl_All"
+            android:layout_marginLeft="@dimen/start_10"
+            android:layout_marginBottom="5.1dp"
+            android:visibility="gone">
+
+            <!--送检图片-->
+            <ImageView
+                android:id="@+id/rgb_depth_test_view"
+                android:layout_width="110dp"
+                android:layout_height="83dp"
+                android:background="@drawable/gate_imageview_radius"
+                android:src="@mipmap/ic_image_video" />
+
+            <RelativeLayout
+                android:layout_width="110dp"
+                android:layout_height="22.7dp"
+                android:layout_alignParentBottom="true"
+                android:background="#B3000000"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="23dp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:text="RGB图片帧"
+                    android:textColor="#FFFFFFFF"
+                    android:gravity="center_vertical"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:visibility="gone"
+                    android:layout_gravity="center"
+                    android:id="@+id/rgb_test_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ic_icon_develop_success"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="2dp"/>
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/liveness_tips_failRl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/depth_test_Rl"
+            android:layout_centerHorizontal="true"
+            android:layout_marginRight="45dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/gate_radius_compare"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/liveness_tips_failIv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:background="@mipmap/tips_fail" />
+
+            <TextView
+                android:id="@+id/liveness_tips_failTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="21.7dp"
+                android:layout_marginRight="53.7dp"
+                android:layout_marginBottom="13.7dp"
+                android:layout_toRightOf="@+id/liveness_tips_failIv"
+                android:gravity="center_horizontal"
+                android:text="@string/testimony_tips_fail"
+                android:textColor="#FFFEC133"
+                android:textSize="25sp" />
+
+            <TextView
+                android:id="@+id/liveness_tips_please_failTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/liveness_tips_failTv"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="21.7dp"
+                android:layout_toRightOf="@+id/liveness_tips_failIv"
+                android:text="@string/testimony_tips_please_fail"
+                android:textColor="#FFFFFFFF"
+                android:textSize="@dimen/activition_18_sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/layout_compare_status"
+            android:layout_width="120dp"
+            android:layout_height="44dp"
+            android:layout_above="@+id/depth_test_Rl"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/gate_radius_compare"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/text_compare_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:textSize="20sp" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/depth_buttomLl_All"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:visibility="visible"
+                android:id="@+id/depth_buttomLl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@mipmap/bg_bottom_pattern"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:id="@+id/depth_addIv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="53dp"
+                        android:background="@mipmap/icon_upload" />
+
+                    <TextView
+                        android:id="@+id/depth_upload_filesTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/depth_addIv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="26dp"
+                        android:text="@string/testimony_upload_files"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="25sp" />
+
+                    <RelativeLayout
+                        android:id="@+id/depth_showRl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="124.7dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/start_15"
+                        android:background="@mipmap/accredit_mask"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/depth_showImg"
+                            android:layout_width="79.3dp"
+                            android:layout_height="95dp"
+                            android:layout_above="@+id/depth_showAgainTv"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="6dp" />
+
+                        <TextView
+                            android:id="@+id/depth_showAgainTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="12dp"
+                            android:text="@string/hint_adain"
+                            android:textColor="@color/white"
+                            android:textSize="15sp" />
+                    </RelativeLayout>
+                </RelativeLayout>
+            </LinearLayout>
+
+<!--            //开发模式-->
+
+            <RelativeLayout
+                android:id="@+id/kaifa_relativeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/gate_radius"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <RelativeLayout
+                    android:id="@+id/kaifa_leftRl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <RelativeLayout
+                        android:visibility="visible"
+                        android:background="@mipmap/accredit_mask"
+                        android:id="@+id/Development_addRl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="124.7dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50.3dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="@dimen/start_10">
+
+                        <ImageView
+                            android:id="@+id/Development_addIv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="50dp"
+                            android:background="@mipmap/icon_upload" />
+
+                        <TextView
+                            android:id="@+id/Development_upload_filesTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/Development_addIv"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/testimony_upload_files"
+                            android:textColor="#FFFFFFFF"
+                            android:textSize="@dimen/activition_14_sp" />
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/hint_showRl"
+                        android:layout_width="85dp"
+                        android:layout_height="124.7dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50.3dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="@dimen/start_10"
+                        android:background="@mipmap/accredit_mask"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/hint_showIv"
+                            android:layout_width="75dp"
+                            android:layout_height="85dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="6dp" />
+
+                        <TextView
+                            android:id="@+id/hint_adainTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="12dp"
+                            android:text="@string/hint_adain"
+                            android:textColor="@color/white"
+                            android:textSize="15sp" />
+                    </RelativeLayout>
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="50.3dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="@dimen/activition_20"
+                    android:layout_toRightOf="@+id/kaifa_leftRl"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_depth_live_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="相似度分数：0"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_depth_live_score"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="活体检测耗时：0.0"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_feature_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="特征抽取耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_feature_search_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="特征比对耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_all_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="总耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </RelativeLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/depth_baiduTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        android:text="@string/home_baidu"
+        android:textColor="#808080" />
+</RelativeLayout>

@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/testimony_Rl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.baidu.idl.face.main.activity.testimony.FaceRGBPersonActivity">
+
+    <include
+        android:id="@+id/testimony_titleRl"
+        layout="@layout/layout_title_gate" />
+
+    <RelativeLayout
+        android:id="@+id/testimony_centerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/testimony_titleRl">
+
+        <com.baidu.idl.face.main.camera.AutoTexturePreviewView
+            android:id="@+id/auto_rgb_preview_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextureView
+            android:id="@+id/texture_view_draw"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <View
+            android:id="@+id/mongolia_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <!--RGB 检测图片测试-->
+        <RelativeLayout
+            android:visibility="gone"
+            android:id="@+id/test_rgb_rl"
+            android:layout_width="110dp"
+            android:layout_height="82.7dp"
+            android:layout_above="@+id/person_buttomLl_All"
+            android:layout_marginLeft="15dp"
+            android:layout_marginBottom="5dp">
+
+            <ImageView
+                android:id="@+id/test_rgb_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/gate_imageview_radius"
+                android:src="@mipmap/ic_image_video" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="23dp"
+                android:layout_alignParentBottom="true"
+                android:background="#B3000000"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="23dp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:gravity="center_vertical"
+                    android:text="RGB图片帧"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:visibility="gone"
+                    android:id="@+id/person_kaifaIv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="2dp"
+                    android:src="@mipmap/ic_icon_develop_success" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/testimony_tips_failRl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/test_rgb_rl"
+            android:layout_centerHorizontal="true"
+            android:layout_marginRight="45dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/gate_radius_compare"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/testimony_tips_failIv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="22.3dp"
+                android:layout_marginTop="19.3dp"
+                android:layout_marginBottom="19.3dp"
+                android:background="@mipmap/tips_fail" />
+
+            <TextView
+                android:id="@+id/testimony_tips_failTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="17.7dp"
+                android:layout_marginTop="21.7dp"
+                android:layout_marginRight="53.7dp"
+                android:layout_marginBottom="13.7dp"
+                android:layout_toRightOf="@+id/testimony_tips_failIv"
+                android:gravity="center_horizontal"
+                android:text="@string/testimony_tips_fail"
+                android:textColor="#FFFEC133"
+                android:textSize="25sp" />
+
+            <TextView
+                android:id="@+id/testimony_tips_please_failTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/testimony_tips_failTv"
+                android:layout_marginLeft="17.7dp"
+                android:layout_marginBottom="21.7dp"
+                android:layout_toRightOf="@+id/testimony_tips_failIv"
+                android:text="@string/testimony_tips_please_fail"
+                android:textColor="#FFFFFFFF"
+                android:textSize="18sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/layout_compare_status"
+            android:layout_width="120dp"
+            android:layout_height="44dp"
+            android:layout_above="@+id/test_rgb_rl"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/gate_radius_compare"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/text_compare_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:textSize="20sp" />
+        </RelativeLayout>
+
+        <!--                <RelativeLayout-->
+        <!--                    android:id="@+id/testimony_tips_successRl"-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_above="@+id/test_rgb_rl"-->
+        <!--                    android:layout_centerHorizontal="true"-->
+        <!--                    android:layout_marginRight="45dp"-->
+        <!--                    android:layout_marginBottom="20dp"-->
+        <!--                    android:alpha="0.8"-->
+        <!--                    android:background="@drawable/gate_radius"-->
+        <!--                    android:visibility="gone">-->
+
+        <!--                    <ImageView-->
+        <!--                        android:id="@+id/testimony_tips_successIv"-->
+        <!--                        android:layout_width="wrap_content"-->
+        <!--                        android:layout_height="wrap_content"-->
+        <!--                        android:layout_centerVertical="true"-->
+        <!--                        android:layout_marginLeft="22.7dp"-->
+        <!--                        android:layout_marginTop="19.3dp"-->
+        <!--                        android:layout_marginBottom="19.3dp"-->
+        <!--                        android:background="@mipmap/tips_fail" />-->
+
+        <!--                    <TextView-->
+        <!--                        android:id="@+id/testimony_tips_successTv"-->
+        <!--                        android:layout_width="wrap_content"-->
+        <!--                        android:layout_height="wrap_content"-->
+        <!--                        android:layout_centerHorizontal="true"-->
+        <!--                        android:layout_marginLeft="17.3dp"-->
+        <!--                        android:layout_marginTop="21.7dp"-->
+        <!--                        android:layout_marginRight="78.7dp"-->
+        <!--                        android:layout_marginBottom="17dp"-->
+        <!--                        android:layout_toRightOf="@+id/testimony_tips_successIv"-->
+        <!--                        android:gravity="center_horizontal"-->
+        <!--                        android:text="@string/testimony_tips_success"-->
+        <!--                        android:textColor="#FFFEC133"-->
+        <!--                        android:textSize="25sp" />-->
+
+        <!--                    <TextView-->
+        <!--                        android:id="@+id/testimony_tips_please_successTv"-->
+        <!--                        android:layout_width="216px"-->
+        <!--                        android:layout_height="wrap_content"-->
+        <!--                        android:layout_below="@+id/testimony_tips_successTv"-->
+        <!--                        android:layout_marginLeft="17.3dp"-->
+        <!--                        android:layout_marginBottom="21.7dp"-->
+        <!--                        android:layout_toRightOf="@+id/testimony_tips_successIv"-->
+        <!--                        android:text="@string/testimony_tips_please_success"-->
+        <!--                        android:textColor="#FFFFFFFF"-->
+        <!--                        android:textSize="@dimen/activition_18_sp" />-->
+        <!--                </RelativeLayout>-->
+
+
+        <!-- buttom -->
+
+        <LinearLayout
+            android:id="@+id/person_buttomLl_All"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:visibility="visible"
+                android:id="@+id/person_buttomLl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@mipmap/bg_bottom_pattern"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:id="@+id/testimony_addIv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="53dp"
+                        android:background="@mipmap/icon_upload" />
+
+                    <TextView
+                        android:id="@+id/testimony_upload_filesTv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/testimony_addIv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="26dp"
+                        android:text="@string/testimony_upload_files"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="25sp" />
+
+                    <RelativeLayout
+                        android:id="@+id/testimony_showRl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="124.7dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/start_15"
+                        android:background="@mipmap/accredit_mask"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/testimony_showImg"
+                            android:layout_width="140dp"
+                            android:layout_height="95.7dp"
+                            android:layout_above="@+id/testimony_showAgainTv"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="6dp" />
+
+                        <TextView
+                            android:id="@+id/testimony_showAgainTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="12dp"
+                            android:text="@string/hint_adain"
+                            android:textColor="@color/white"
+                            android:textSize="15sp" />
+                    </RelativeLayout>
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!-- 开发模式 -->
+            <RelativeLayout
+                android:id="@+id/kaifa_relativeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/gate_radius"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <RelativeLayout
+                    android:id="@+id/kaifa_leftRl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <RelativeLayout
+                        android:visibility="visible"
+                        android:background="@mipmap/accredit_mask"
+                        android:id="@+id/Development_addRl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="124.7dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50.3dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="@dimen/start_10">
+
+                        <ImageView
+                            android:id="@+id/Development_addIv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="50dp"
+                            android:background="@mipmap/icon_upload" />
+
+                        <TextView
+                            android:id="@+id/Development_upload_filesTv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/Development_addIv"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/testimony_upload_files"
+                            android:textColor="#FFFFFFFF"
+                            android:textSize="@dimen/activition_14_sp" />
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/hint_showRl"
+                        android:layout_width="85dp"
+                        android:layout_height="124.7dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50.3dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="@dimen/start_10"
+                        android:background="@mipmap/accredit_mask"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/hint_showIv"
+                            android:layout_width="75dp"
+                            android:layout_height="85dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="6dp"/>
+
+                        <TextView
+                            android:id="@+id/hint_adainIv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="12dp"
+                            android:text="@string/hint_adain"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+                    </RelativeLayout>
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="50.3dp"
+                    android:layout_marginTop="@dimen/start_15"
+                    android:layout_marginRight="@dimen/activition_20"
+                    android:layout_toRightOf="@+id/kaifa_leftRl"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_rgb_live_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_detect"
+                        android:text="相似度分数：0.0"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_rgb_live_score"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="活体检测耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_feature_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="特征抽取耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_feature_search_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="特征比对耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_all_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="总耗时：0ms"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </RelativeLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/person_baiduTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        android:text="@string/home_baidu"
+        android:textColor="#808080"
+        android:textSize="12sp" />
+
+</RelativeLayout>

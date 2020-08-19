@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linerbarlivedetectmodel"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/fls_save"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:scaleType="centerInside"
+                    android:layout_marginLeft="30dp"
+                    android:src="@mipmap/ic_return" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="活体检测模态"
+                android:textColor="@color/white"
+                android:textSize="25sp" />
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.3dp"
+        android:background="#333333"></View>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/linerlivetpye"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvlivetype"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="30dp"
+                        android:text="活体检测模态"
+                        android:textColor="#999999"
+                        android:textSize="15sp" />
+
+                    <Button
+                        android:id="@+id/cw_livetype"
+                        android:layout_width="23dp"
+                        android:layout_height="23dp"
+                        android:layout_marginLeft="10dp"
+                        android:background="@mipmap/icon_setting_question"></Button>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp">
+
+                <LinearLayout
+                    android:id="@+id/flRepresent"
+                    android:layout_width="match_parent"
+                    android:layout_height="230dp"
+                    android:background="@drawable/sr_liner_rectangle"
+                    android:orientation="horizontal">
+
+                    <RadioGroup
+                        android:id="@+id/fls_live_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <RadioButton
+                            android:id="@+id/fls_rgb_live"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:paddingLeft="10dp"
+                            android:text="RGB单目活体检测"
+                            android:textColor="@color/white"
+                            android:textSize="20sp" />
+
+                        <Button
+                            android:id="@+id/cw_rgb"
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+                            android:layout_marginLeft="215dp"
+                            android:layout_marginTop="-43dp"
+                            android:background="@mipmap/icon_setting_question"></Button>
+
+                        <View
+                            android:id="@+id/rgbView"
+                            android:layout_width="match_parent"
+                            android:layout_height="0.3dp"
+                            android:layout_marginTop="15dp"
+                            android:background="#333333"></View>
+
+                        <RadioButton
+                            android:id="@+id/fls_rgbandnir_live"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:paddingLeft="10dp"
+                            android:text="RGB+NIR活体检测"
+                            android:textColor="@color/white"
+                            android:textSize="20sp" />
+
+                        <Button
+                            android:id="@+id/cw_rgbandnir"
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+                            android:layout_marginLeft="215dp"
+                            android:layout_marginTop="-43dp"
+                            android:background="@mipmap/icon_setting_question"></Button>
+
+                        <View
+                            android:id="@+id/rgbAndNirView"
+                            android:layout_width="match_parent"
+                            android:layout_height="0.3dp"
+                            android:layout_marginTop="15dp"
+                            android:background="#333333"></View>
+
+                        <RadioButton
+                            android:id="@+id/fls_rgbanddepth_live"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:paddingLeft="10dp"
+                            android:text="RGB+Depth活体检测"
+                            android:textColor="@color/white"
+                            android:textSize="20sp" />
+
+                        <Button
+                            android:id="@+id/cw_rgbanddepth"
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+                            android:layout_marginLeft="235dp"
+                            android:layout_marginTop="-43dp"
+                            android:background="@mipmap/icon_setting_question"></Button>
+
+                        <View
+                            android:id="@+id/rgbAndDepthView"
+                            android:layout_width="match_parent"
+                            android:layout_height="0.3dp"
+                            android:layout_marginTop="15dp"
+                            android:background="#333333"></View>
+
+                        <RadioButton
+                            android:id="@+id/fls_no_live"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:button="@drawable/sr_radio_button__selector"
+
+                            android:paddingLeft="10dp"
+                            android:text="不使用活体检测"
+                            android:textColor="@color/white"
+                            android:textSize="20sp" />
+                    </RadioGroup>
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/linercameratype"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="30dp">
+
+                    <TextView
+                        android:id="@+id/textcameratype"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="镜头型号"
+                        android:textColor="#999999"
+                        android:textSize="15sp" />
+
+                    <Button
+                        android:id="@+id/cw_cameratype"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginLeft="10dp"
+                        android:background="@mipmap/icon_setting_question"></Button>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/sr_liner_rectangle"
+                    android:orientation="horizontal">
+
+                    <RadioGroup
+                        android:id="@+id/fls_camera_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/flt_zero"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:text="奥比中光Astra Mini、Mini S系列(结构光 640*480)"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:visibility="gone" />
+
+                        <RadioButton
+                            android:id="@+id/flt_one"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:paddingLeft="10dp"
+                            android:text="奥比中光 Astra Pro 、Pro S 、蝴蝶（结构光 640*480）"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:visibility="visible" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.3dp"
+                            android:background="#333333"></View>
+
+                        <RadioButton
+                            android:id="@+id/flt_two"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:paddingLeft="10dp"
+                            android:text="奥比中光Atlas（结构光 400*640）"
+                            android:textColor="@color/white"
+                            android:textSize="20sp" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.3dp"
+                            android:background="#333333"></View>
+
+                        <RadioButton
+                            android:id="@+id/flt_three"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:paddingLeft="10dp"
+                            android:text="奥比中光大白、海燕(结构光 640*400)"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:visibility="visible" />
+
+                        <RadioButton
+                            android:id="@+id/flt_four"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:text="奥比中光Deeyea(结构光 640*400)"
+                            android:textColor="@color/white"
+                            android:visibility="gone" />
+
+                        <RadioButton
+                            android:id="@+id/flt_five"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:text="华捷艾米A100S、A200(结构光 640*480)"
+                            android:textColor="@color/white"
+                            android:visibility="gone" />
+
+                        <RadioButton
+                            android:id="@+id/flt_six"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginTop="8dp"
+                            android:button="@drawable/sr_radio_button__selector"
+                            android:text="Pico DCAM710(ToF 640*480)"
+                            android:textColor="@color/white"
+                            android:visibility="gone" />
+                    </RadioGroup>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/logo_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="23dp"
+            android:alpha="0.4"
+            android:gravity="center_horizontal"
+            android:text="— 百度大脑技术支持 —"
+            android:textColor="#666666"
+            android:textSize="@dimen/bottom_font"/>
+    </RelativeLayout>
+</LinearLayout>
