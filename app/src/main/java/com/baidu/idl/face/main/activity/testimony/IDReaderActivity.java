@@ -1051,7 +1051,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         Log.e(TAG, result);
                         if (result.equals("0")) {
                             // 如果更新成功，则人脸识别 TODO
-                            toast("请重新刷一次二维码");
+                            toast("上传脸部照片成功，请重扫二维码");
                         } else {
                             toast("上传脸部照片失败，errCode: " + result);
                         }
@@ -1331,7 +1331,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                         if (result.equals("0")) {
                                             // 如果更新成功，则人脸识别 TODO
                                             Log.e(TAG, result);
-                                            toast("请重新刷一次证件");
+                                            toast("上传证件照成功");
                                         } else {
                                             toast("上传证件照失败，errCode: " + result);
                                         }
