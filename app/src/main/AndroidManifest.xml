@@ -107,6 +107,8 @@
         <activity android:name=".activity.vbar.VBarActivity" />
         <activity android:name=".activity.view.FaceNIRDetectActivity" />
         <activity android:name=".activity.testimony.IDReaderActivity" />
+        <activity android:name=".activity.payment.ZKIDReaderActivity" />
+        <activity android:name=".activity.scangun.ScanGunActivity" />
 
         <receiver
             android:name="com.baidu.liantian.LiantianReceiver"

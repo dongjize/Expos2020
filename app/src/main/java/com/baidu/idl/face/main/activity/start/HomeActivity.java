@@ -30,9 +30,11 @@ import com.baidu.idl.face.main.activity.gaze.FaceGazeActivity;
 import com.baidu.idl.face.main.activity.payment.FaceDepthPaymentActivity;
 import com.baidu.idl.face.main.activity.payment.FaceNIRPaymentActivity;
 import com.baidu.idl.face.main.activity.payment.FaceRGBPaymentActivity;
+import com.baidu.idl.face.main.activity.payment.ZKIDReaderActivity;
 import com.baidu.idl.face.main.activity.register.FaceRegisterNewDepthActivity;
 import com.baidu.idl.face.main.activity.register.FaceRegisterNewNIRActivity;
 import com.baidu.idl.face.main.activity.register.FaceRegisterNewActivity;
+import com.baidu.idl.face.main.activity.scangun.ScanGunActivity;
 import com.baidu.idl.face.main.activity.setting.SettingMainActivity;
 import com.baidu.idl.face.main.activity.testimony.FaceDepthTestimonyActivity;
 import com.baidu.idl.face.main.activity.testimony.FaceIRTestimonyActivity;
@@ -136,9 +138,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         RelativeLayout home_checkRl = findViewById(R.id.home_checkRl);
 //        home_checkRl.setOnClickListener(this);
         RelativeLayout home_payRl = findViewById(R.id.home_payRl);
-//        home_payRl.setOnClickListener(this);
+        home_payRl.setOnClickListener(this);
         RelativeLayout home_attributeRl = findViewById(R.id.home_attributeRl);
-//        home_attributeRl.setOnClickListener(this);
+        home_attributeRl.setOnClickListener(this);
         home_personRl = findViewById(R.id.home_personRl);
         home_personRl.setOnClickListener(this);
         RelativeLayout home_driveRl = findViewById(R.id.home_driveRl);
@@ -215,17 +217,19 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-                judgeLiveType(mLiveType,
-                        FaceRGBPaymentActivity.class,
-                        FaceNIRPaymentActivity.class,
-                        FaceDepthPaymentActivity.class);
+                startActivity(new Intent(HomeActivity.this, ZKIDReaderActivity.class));
+//                judgeLiveType(mLiveType,
+//                        FaceRGBPaymentActivity.class,
+//                        FaceNIRPaymentActivity.class,
+//                        FaceDepthPaymentActivity.class);
                 break;
             case R.id.home_attributeRl:
                 // 属性模块
                 if (!initSuccess()) {
                     return;
                 }
-                startActivity(new Intent(HomeActivity.this, FaceAttributeActivity.class));
+//                startActivity(new Intent(HomeActivity.this, FaceAttributeActivity.class));
+                startActivity(new Intent(HomeActivity.this, ScanGunActivity.class));
                 break;
             case R.id.home_personRl:
                 // 人证核验

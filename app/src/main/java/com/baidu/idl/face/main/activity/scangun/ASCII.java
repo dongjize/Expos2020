@@ -1,4 +1,4 @@
-package com.baidu.idl.face.main.scangun;
+package com.baidu.idl.face.main.activity.scangun;
 
 /**
  * ASCII  Table

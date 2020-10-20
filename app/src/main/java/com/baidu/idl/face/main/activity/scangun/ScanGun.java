@@ -1,4 +1,4 @@
-package com.baidu.idl.face.main.scangun;
+package com.baidu.idl.face.main.activity.scangun;
 
 
 import android.util.Log;
@@ -255,7 +255,6 @@ public class ScanGun {
 
     public interface ScanGunCallBack {
         public void onScanFinish(String data);
-
     }
 
 
