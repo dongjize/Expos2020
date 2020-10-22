@@ -114,8 +114,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     // 摄像头采集数据
     private volatile byte[] rgbData;
     private volatile byte[] irData;
-    private RelativeLayout livenessAgainRl;
-    private ImageView livenessShowIv;
+    private ImageView idCardPhotoIv; //身份证照片
+    private ImageView livePhotoIv; //现场照片
     private ImageView hintShowIv;
     private TextView tv_nir_live_score;
     private RelativeLayout livenessTipsFailRl;
@@ -134,7 +134,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private RelativeLayout test_nir_rl;
     private RelativeLayout test_rgb_ir_rl;
     private TextView hintAdainTv;
-    private TextView livenessBaiduTv;
     private View view;
     private RelativeLayout layoutCompareStatus;
     private TextView textCompareStatus;
@@ -145,6 +144,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private TextView tv_all_time;
     private RelativeLayout hintShowRl;
     private RelativeLayout developmentAddRl;
+
     private float rgbLiveScore;
     private float nirLiveScore;
     // 判断是否有人脸
@@ -161,7 +161,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private TextView mTvUserName;
     private ReaderPresenter mReaderPresenter;
     private boolean isReqUSBPermission = false;
-    private Bitmap mIdCardPhoto;
+    private Bitmap mUserCloudPhoto;
     private int mDeviceType = DeviceParamBean.DEV_TYPE_INNER_OR_HID;
     private Handler mHandler;
     private long mLastOpenTime = 0;
@@ -293,8 +293,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mDrawDetectFaceView = findViewById(R.id.texture_view_draw);
         mDrawDetectFaceView.setKeepScreenOn(true);
         mDrawDetectFaceView.setOpaque(false);
-        // 百度
-        livenessBaiduTv = findViewById(R.id.liveness_baiduTv);
 
         view = findViewById(R.id.mongolia_view);
         // RGB 阈值
@@ -316,6 +314,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
         mTvIDCardNo = findViewById(R.id.tvCardNo);
         mTvUserName = findViewById(R.id.tvUserName);
+
 
         // ****************开发模式****************
         // RGB
@@ -359,8 +358,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         livenessTipsFailTv = findViewById(R.id.liveness_tips_failTv);
         livenessTipsPleaseFailTv = findViewById(R.id.liveness_tips_please_failTv);
         livenessTipsFailIv = findViewById(R.id.liveness_tips_failIv);
-        livenessAgainRl = findViewById(R.id.liveness_againRl);
-        livenessShowIv = findViewById(R.id.liveness_showIv);
+        idCardPhotoIv = findViewById(R.id.liveness_showIv);
+        livePhotoIv = findViewById(R.id.iv_live_photo);
+
         // 双摄像头
         mCameraNum = Camera.getNumberOfCameras();
         if (mCameraNum < 2) {
@@ -382,7 +382,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 super.run();
                 while (true) {
                     final String audienceCode = vbar.getResultsingle();
-                    Log.e(TAG, "===============" + audienceCode);
                     if (audienceCode != null && System.currentTimeMillis() - mQRTime > USER_SCAN_INTERVAL) {
 
                         mQRTime = System.currentTimeMillis();
@@ -395,14 +394,14 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                 requestUserByAudienceCode(new OnResultListener<List<User>>() {
                                     @Override
                                     public void onResult(List<User> result) {
-                                        pclass = "扫二维码";
+                                        pclass = "人证核验";
                                         if (result != null && result.size() > 0) {
                                             if (mUser != null) {
                                                 lastUserIdNo = mUser.getIdCardNo();
                                             }
                                             // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
                                             if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                                                mUserScanTime = System.currentTimeMillis();
+                                                mUserScanTime = 0;
                                             }
                                             mUser = result.get(0);
                                             runOnUiThread(new Runnable() {
@@ -414,14 +413,14 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                             });
 
                                             if (!TextUtils.isEmpty(mUser.getImage())) {
-                                                mIdCardPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
+                                                mUserCloudPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        livenessShowIv.setImageBitmap(mIdCardPhoto);
+                                                        idCardPhotoIv.setImageBitmap(mUserCloudPhoto);
                                                     }
                                                 });
-                                                FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
+                                                FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
                                             } else {
                                                 isQrFaceDetect = true;
                                             }
@@ -502,7 +501,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
             });
-//            Log.e(TAG, "===================" + s);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -623,6 +621,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
+    private boolean isIdCardFaceDetect = true;
+
     private void dealIr(byte[] data) {
         irData = data;
         if (isQrFaceDetect) {
@@ -634,8 +634,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
 
     private synchronized void checkData() {
+
         if (rgbData != null && irData != null) {
-            if (livenessShowIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
+            if (idCardPhotoIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
                 firstFeatureFinished = false;
                 FaceSDKManager.getInstance().onDetectCheck(rgbData, irData, null,
                         PREFER_HEIGHT, PREFER_WIDTH, 3, new FaceDetectCallBack() {
@@ -701,6 +702,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                     if (rgbLivenessScore > rgbLiveScore && nirLivenessScore >
                                                             nirLiveScore) {
                                                         if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
+                                                            BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
+                                                            if (image != null && livePhotoIv.getDrawable() == null) {
+                                                                livePhotoIv.setImageBitmap(BitmapUtils.getInstaceBmp(image));
+                                                                image.destory();
+                                                            }
+
                                                             livenessTipsFailTv.setText("人证核验通过");
                                                             livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
                                                             livenessTipsPleaseFailTv.setText("识别成功");
@@ -732,7 +739,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                 public void run() {
                                                     mTvIDCardNo.setText("");
                                                     mTvUserName.setText("");
-                                                    livenessShowIv.setImageBitmap(null);
+                                                    idCardPhotoIv.setImageBitmap(null);
+                                                    livePhotoIv.setImageDrawable(null);
                                                     checkable = false;
                                                 }
                                             }, 5 * 1000);
@@ -767,7 +775,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                             uploadPassRecord(new OnResultListener<String>() {
                                 @Override
                                 public void onResult(String result) {
-                                    Log.e(TAG, result);
+                                    Log.e(TAG, "通行成功");
                                 }
 
                                 @Override
@@ -805,7 +813,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             String todayAsString = df.format(today);
 
             RequestBody body = new FormBody.Builder()
-                    .add("pimg", BitmapUtils.bitmapToBase64(mIdCardPhoto, 60))
+                    .add("pimg", BitmapUtils.bitmapToBase64(mUserCloudPhoto, 60))
                     .add("user_id", mUser.getUserId() == null ? "" : mUser.getUserId())
                     .add("user_name", mUser.getUserName() == null ? "" : mUser.getUserName())
                     .add("pclass", pclass == null ? "" : pclass)
@@ -927,8 +935,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 }
 
                 if (mPointXY[2] > previewWidth || mPointXY[3] > previewWidth) {
-//                    mFaceRoundProView.setTipText("请向后远离镜头");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     // 释放内存
                     Log.e("mPointXY", "请向后远离镜头");
                     destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
@@ -939,16 +945,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         || mPointXY[0] + mPointXY[2] / 2 > rightLimitX
                         || mPointXY[1] - mPointXY[3] / 2 < topLimitY
                         || mPointXY[1] + mPointXY[3] / 2 > bottomLimitY) {
-//                    mFaceRoundProView.setTipText("保持面部在取景框内");
                     Log.e("mPointXY", "保持面部在取景框内");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     // 释放内存
                     destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
                     return;
                 }
 
-//                mFaceRoundProView.setTipText("请保持面部在取景框内");
-//                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_blue);
                 // 检验活体分值
                 checkLiveScore(livenessModel);
             }
@@ -1014,7 +1016,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             // 获取头像
             if (mDetectedBitmap != null) {
                 mCollectSuccess = true;
-                livenessShowIv.setImageBitmap(mDetectedBitmap);
+                idCardPhotoIv.setImageBitmap(mDetectedBitmap);
 
                 uploadIDPhoto(new OnResultListener<String>() {
                     @Override
@@ -1241,7 +1243,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     @Override
     public void onReadIDCardSuccess(final Info.IDCardInfo iDCardInfo) {
         isQrFaceDetect = false;
-        pclass = "刷身份证";
+        pclass = "身份证比对";
 
         if (iDCardInfo != null) {
             flushIDCardInfo(iDCardInfo, true);
@@ -1258,13 +1260,13 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                         // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
                         if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                            mUserScanTime = System.currentTimeMillis();
+                            mUserScanTime = 0;
                         }
                         mUser = result.get(0);
 
                         if (iDCardInfo.photo != null) {
-                            mIdCardPhoto = iDCardInfo.photo;
-                            FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
+                            mUserCloudPhoto = iDCardInfo.photo;
+                            FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
 
                             if (TextUtils.isEmpty(mUser.getImage())) {
                                 uploadIDPhoto(new OnResultListener<String>() {
@@ -1380,7 +1382,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private void flushIDCardInfo(final Info.IDCardInfo idCardInfo, boolean display) {
         if (display) {
             if (idCardInfo.cardType == Info.ID_CARD_TYPE_CHINA) {// 身份证
-                livenessShowIv.setImageBitmap(idCardInfo.photo);
+                idCardPhotoIv.setImageBitmap(idCardInfo.photo);
                 mTvIDCardNo.setText(idCardInfo.id);
                 mTvUserName.setText(idCardInfo.name);
             } else if (idCardInfo.cardType == Info.ID_CARD_TYPE_FOREIGN) {// 外国人证

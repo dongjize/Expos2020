@@ -214,24 +214,46 @@
 
                 <RelativeLayout
                     android:id="@+id/liveness_againRl"
-                    android:layout_width="143.3dp"
-                    android:layout_height="124.7dp"
-                    android:background="@mipmap/accredit_mask">
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent">
 
                     <ImageView
                         android:id="@+id/liveness_showIv"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
+                        android:layout_height="120dp" />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="身份证照片"
+                        android:textColor="@color/white"
+                        android:layout_below="@id/liveness_showIv"
+                        android:layout_centerHorizontal="true"/>
                 </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="身份证照片"
-                    android:textColor="@color/white"
-                    android:layout_below="@id/liveness_againRl"
-                    android:layout_centerHorizontal="true"/>
+
+
+                <RelativeLayout
+                    android:id="@+id/live_photo_layout"
+                    android:layout_toRightOf="@id/liveness_againRl"
+                    android:layout_width="120dp"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/iv_live_photo"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="现场照片"
+                        android:textColor="@color/white"
+                        android:layout_below="@id/iv_live_photo"
+                        android:layout_centerHorizontal="true"/>
+                </RelativeLayout>
+
+
             </RelativeLayout>
 
             <LinearLayout
