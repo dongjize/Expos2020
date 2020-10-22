@@ -317,7 +317,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mTvIDCardNo = findViewById(R.id.tvCardNo);
         mTvUserName = findViewById(R.id.tvUserName);
 
-
         // ****************开发模式****************
         // RGB
         testImageview = findViewById(R.id.test_rgb_ir_view);
@@ -360,16 +359,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         livenessTipsFailTv = findViewById(R.id.liveness_tips_failTv);
         livenessTipsPleaseFailTv = findViewById(R.id.liveness_tips_please_failTv);
         livenessTipsFailIv = findViewById(R.id.liveness_tips_failIv);
-        // 预览模式buttom
-//        livenessButtomLl = findViewById(R.id.liveness_buttomLl);
-//        kaifaRelativeLayout = findViewById(R.id.kaifa_relativeLayout);
-//        livenessAddIv = findViewById(R.id.liveness_addIv);
-//        livenessAddIv.setOnClickListener(this);
-//        livenessUpdateTv = findViewById(R.id.liveness_updateTv);
         livenessAgainRl = findViewById(R.id.liveness_againRl);
         livenessShowIv = findViewById(R.id.liveness_showIv);
-//        TextView livenessAgainTv = findViewById(R.id.liveness_againTv);
-//        livenessAgainTv.setOnClickListener(this);
         // 双摄像头
         mCameraNum = Camera.getNumberOfCameras();
         if (mCameraNum < 2) {
@@ -432,7 +423,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                 });
                                                 FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
                                             } else {
-//                                                startActivityForResult(new Intent(IDReaderActivity.this, FaceNIRDetectActivity.class), 100);
                                                 isQrFaceDetect = true;
                                             }
                                         } else {
@@ -491,7 +481,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
+                    if (response.body() == null || TextUtils.isEmpty(haha)) {
                         FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
                         listener.onError(error);
 
@@ -656,7 +646,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                             @Override
                             public void onTip(int code, String msg) {
-
                             }
 
                             @Override
@@ -667,14 +656,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                 rgbData = null;
                 irData = null;
-            } else {
-//                test_nir_iv.setVisibility(View.VISIBLE);
-//                test_rgb_iv.setVisibility(View.VISIBLE);
-//                testImageview.setImageResource(R.mipmap.ic_image_video);
-//                ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 0.85f, 0.0f);
-//                animator.setDuration(3000);
-//                view.setBackgroundColor(Color.parseColor("#ffffff"));
-//                animator.start();
             }
         }
     }
@@ -897,8 +878,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-//                                mFaceRoundProView.setTipText("保持面部在取景框内");
-//                                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                             }
                         });
                     }
@@ -983,7 +962,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
      */
     private void checkLiveScore(LivenessModel livenessModel) {
         if (livenessModel == null || livenessModel.getFaceInfo() == null) {
-//            mFaceRoundProView.setTipText("保持面部在取景框内");
             return;
         }
 
@@ -1020,8 +998,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
     private void displayCompareResult(float ret, byte[] faceFeature, LivenessModel model) {
         if (model == null) {
-//            mFaceRoundProView.setTipText("保持面部在取景框内");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
             return;
         }
 
@@ -1030,8 +1006,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         if (ret == 128) {
             BDFaceImageInstance bdFaceImageInstance = model.getBdFaceImageInstance();
             if (bdFaceImageInstance == null) {
-//                mFaceRoundProView.setTipText("抠图失败");
-//                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                 return;
             }
 
@@ -1063,16 +1037,10 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             }
             bdFaceImageInstance.destory();
 
-//            mRelativeCollectSuccess.setVisibility(View.VISIBLE);
-//            mRelativePreview.setVisibility(View.GONE);
-//            mFaceRoundProView.setTipText("");
             for (int i = 0; i < faceFeature.length; i++) {
                 mFeatures[i] = faceFeature[i];
             }
 
-        } else {
-//            mFaceRoundProView.setTipText("特征提取失败");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
         }
     }
 
@@ -1089,29 +1057,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             case R.id.btn_setting:
                 startActivity(new Intent(mContext, SettingMainActivity.class));
                 finish();
-                break;
-            // 预览模式
-            case R.id.preview_text:
-                isDevelopment = false;
-                if (livenessShowIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
-                    livenessTipsFailRl.setVisibility(View.VISIBLE);
-                    layoutCompareStatus.setVisibility(View.GONE);
-                } else {
-                    livenessTipsFailRl.setVisibility(View.GONE);
-                    layoutCompareStatus.setVisibility(View.GONE);
-                }
-                testimonyPreviewLineIv.setVisibility(View.VISIBLE);
-                testimonyDevelopmentLineIv.setVisibility(View.GONE);
-                testimonyDevelopmentTv.setTextColor(Color.parseColor("#FF999999"));
-                testimonyPreviewTv.setTextColor(getResources().getColor(R.color.white));
-                test_nir_rl.setVisibility(View.GONE);
-                test_rgb_ir_rl.setVisibility(View.GONE);
-//                livenessButtomLl.setVisibility(View.VISIBLE);
-                kaifaRelativeLayout.setVisibility(View.GONE);
-                livenessBaiduTv.setVisibility(View.VISIBLE);
-//                test_nir_view.setVisibility(View.GONE);
-                irTexture.setAlpha(0);
-                testImageview.setVisibility(View.GONE);
                 break;
         }
     }
@@ -1299,7 +1244,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         pclass = "刷身份证";
 
         if (iDCardInfo != null) {
-            updateIDCardInfo(iDCardInfo, true);
+            flushIDCardInfo(iDCardInfo, true);
 
             requestUserById(new OnResultListener<List<User>>() {
                 @Override
@@ -1329,6 +1274,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                             // 如果更新成功，则人脸识别 TODO
                                             Log.e(TAG, result);
                                             toast("上传证件照成功");
+
                                         } else {
                                             toast("上传证件照失败，errCode: " + result);
                                         }
@@ -1431,7 +1377,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    private void updateIDCardInfo(final Info.IDCardInfo idCardInfo, boolean display) {
+    private void flushIDCardInfo(final Info.IDCardInfo idCardInfo, boolean display) {
         if (display) {
             if (idCardInfo.cardType == Info.ID_CARD_TYPE_CHINA) {// 身份证
                 livenessShowIv.setImageBitmap(idCardInfo.photo);
