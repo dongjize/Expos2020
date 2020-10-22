@@ -286,10 +286,10 @@ public class ReaderTask {
         	case MSG_START_READCARD:
         	{
         		mDeviceParamBean = (DeviceParamBean)msg.obj;
-        		mDeviceType = mDeviceParamBean.getDevice_type();        		
+        		mDeviceType = mDeviceParamBean.getDeviceType();
         		if(mDeviceType==DeviceParamBean.DEV_TYPE_BT){
-        			if(mDeviceParamBean.getUser_obj() instanceof BluetoothDevice){
-        				BluetoothDevice device = (BluetoothDevice)mDeviceParamBean.getUser_obj();
+        			if(mDeviceParamBean.getUserObj() instanceof BluetoothDevice){
+        				BluetoothDevice device = (BluetoothDevice)mDeviceParamBean.getUserObj();
         				int ret = ErrorCode.ErrCodeCCID_E_INIT_FAIL;
         				mReader = new BTImpl();
 //        				mReader.setDebug(true);

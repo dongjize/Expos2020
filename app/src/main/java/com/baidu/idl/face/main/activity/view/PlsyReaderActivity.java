@@ -204,8 +204,8 @@ public class PlsyReaderActivity extends BaseActivity implements IReaderView, OnC
                     mBTDeviceSelected = device;
 
                     DeviceParamBean devParamBean = new DeviceParamBean();
-                    devParamBean.setDevice_type(mDeviceType);
-                    devParamBean.setUser_obj(device);
+                    devParamBean.setDeviceType(mDeviceType);
+                    devParamBean.setUserObj(device);
                     mReaderPresenter.startReadcard(devParamBean);
                     break;
                 }
@@ -547,7 +547,7 @@ public class PlsyReaderActivity extends BaseActivity implements IReaderView, OnC
             if (mDeviceType == DeviceParamBean.DEV_TYPE_INNER_OR_HID) {
                 appendLog(AppendLogEvent.LOG_CODE_ANY, "startReadcard");
                 DeviceParamBean devParamBean = new DeviceParamBean();
-                devParamBean.setDevice_type(mDeviceType);
+                devParamBean.setDeviceType(mDeviceType);
                 mReaderPresenter.startReadcard(devParamBean);
             } else {
                 checkBTDevice();
@@ -1126,8 +1126,8 @@ public class PlsyReaderActivity extends BaseActivity implements IReaderView, OnC
                     event.getDevice().getBondState() == BluetoothDevice.BOND_BONDED) {
                 appendLog(AppendLogEvent.LOG_CODE_ANY, "绑定设备" + mBTDeviceSelected.getName() + "成功");
                 DeviceParamBean devParamBean = new DeviceParamBean();
-                devParamBean.setDevice_type(mDeviceType);
-                devParamBean.setUser_obj(mBTDeviceSelected);
+                devParamBean.setDeviceType(mDeviceType);
+                devParamBean.setUserObj(mBTDeviceSelected);
                 //绑定成功,去启动读卡
                 mReaderPresenter.startReadcard(devParamBean);
             }

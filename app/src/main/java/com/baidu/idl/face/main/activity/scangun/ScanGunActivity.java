@@ -22,22 +22,18 @@ public class ScanGunActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scangun);
-        tvScanResult = (TextView) findViewById(R.id.tvScanResult);
-        BtStartScan = (Button) findViewById(R.id.StartScan);
-        BtStopScan = (Button) findViewById(R.id.StopScan);
+        tvScanResult = findViewById(R.id.tvScanResult);
+        BtStartScan = findViewById(R.id.StartScan);
+        BtStopScan = findViewById(R.id.StopScan);
         BtStartScan.setEnabled(true);
         BtStopScan.setEnabled(false);
-
-        Log.d("jason", "onCreate");
 
         BtStartScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 needScan = true;
                 BtStartScan.setEnabled(false);
                 BtStopScan.setEnabled(true);
-
             }
         });
 
@@ -45,12 +41,9 @@ public class ScanGunActivity extends BaseActivity {
         BtStopScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 needScan = false;
                 BtStartScan.setEnabled(true);
                 BtStopScan.setEnabled(false);
-
-
             }
         });
 
@@ -60,10 +53,8 @@ public class ScanGunActivity extends BaseActivity {
             @Override
             public void onScanFinish(String scanResult) {
                 Log.d("jason", "onScanFinish : " + scanResult);
-                //Toast.makeText(MainActivity.this, "数据： "+scanResult, Toast.LENGTH_SHORT).show();
                 tvScanResult.setText(scanResult);
                 tvScanResult.setTextColor(getRandomColorInt());
-
             }
         });
 
@@ -74,7 +65,7 @@ public class ScanGunActivity extends BaseActivity {
         // Log.d("jason","onKeyDown");
         //  Log.d("jason","main  KeyCode :  " + keyCode );
 
-        if (needScan == false)
+        if (!needScan)
             return super.onKeyDown(keyCode, event);
 
         mScanGun.isScanning(keyCode, event);
@@ -86,7 +77,7 @@ public class ScanGunActivity extends BaseActivity {
         // 拦截物理键盘事件
         //  Log.d("jason","dispatchKeyEvent KeyCode :  " + event.getKeyCode() );
 
-        if (needScan == false)
+        if (!needScan)
             return super.dispatchKeyEvent(event);
 
         if (event.getKeyCode() > 6) {
@@ -107,7 +98,6 @@ public class ScanGunActivity extends BaseActivity {
 
     @Override
     protected void onStart() {
-        // TODO Auto-generated method stub
         super.onStart();
         needScan = false;
         BtStartScan.setEnabled(true);
@@ -117,7 +107,6 @@ public class ScanGunActivity extends BaseActivity {
 
     @Override
     protected void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         needScan = false;
         BtStartScan.setEnabled(true);
@@ -127,7 +116,6 @@ public class ScanGunActivity extends BaseActivity {
 
     @Override
     protected void onStop() {
-        // TODO Auto-generated method stub
         super.onStop();
         needScan = false;
         BtStartScan.setEnabled(true);
@@ -137,7 +125,6 @@ public class ScanGunActivity extends BaseActivity {
 
     @Override
     protected void onPause() {
-        // TODO Auto-generated method stub
         super.onPause();
         needScan = false;
         BtStartScan.setEnabled(true);
@@ -147,7 +134,6 @@ public class ScanGunActivity extends BaseActivity {
 
     @Override
     protected void onRestart() {
-        // TODO Auto-generated method stub
         super.onRestart();
         needScan = false;
         BtStartScan.setEnabled(true);
@@ -157,7 +143,6 @@ public class ScanGunActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        // TODO Auto-generated method stub
         super.onDestroy();
         needScan = false;
         BtStartScan.setEnabled(true);

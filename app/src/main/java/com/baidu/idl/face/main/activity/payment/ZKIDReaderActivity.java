@@ -8,10 +8,7 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,13 +42,13 @@ public class ZKIDReaderActivity extends BaseActivity {
     private IDCardReader idCardReader = null;
     private TextView textView = null;
     private ImageView imageView = null;
-    private boolean bopen = false;
-    private boolean bStoped = false;
+    private boolean bOpen = false;
+    private boolean bStopped = false;
     private int mReadCount = 0;
     private CountDownLatch countdownLatch = null;
 
     private Context mContext = null;
-    private UsbManager musbManager = null;
+    private UsbManager mUsbManager = null;
     private final String ACTION_USB_PERMISSION = "com.example.scarx.idcardreader.USB_PERMISSION"; // TODO
 
     private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
@@ -74,13 +71,13 @@ public class ZKIDReaderActivity extends BaseActivity {
     };
 
     private void RequestDevicePermission() {
-        musbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
+        mUsbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
 
-        for (UsbDevice device : musbManager.getDeviceList().values()) {
+        for (UsbDevice device : mUsbManager.getDeviceList().values()) {
             if (device.getVendorId() == VID && device.getProductId() == PID) {
                 Intent intent = new Intent(ACTION_USB_PERMISSION);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent, 0);
-                musbManager.requestPermission(device, pendingIntent);
+                mUsbManager.requestPermission(device, pendingIntent);
             }
         }
     }
@@ -91,8 +88,8 @@ public class ZKIDReaderActivity extends BaseActivity {
         setContentView(R.layout.activity_zk_idreader);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
-        textView = (TextView) findViewById(R.id.textView);
-        imageView = (ImageView) findViewById(R.id.imageView);
+        textView = findViewById(R.id.textView);
+        imageView = findViewById(R.id.imageView);
         mContext = this.getApplicationContext();
 
         IntentFilter filter = new IntentFilter();
@@ -114,7 +111,7 @@ public class ZKIDReaderActivity extends BaseActivity {
         // Define output log level
         LogHelper.setLevel(Log.VERBOSE);
         // Start fingerprint sensor
-        Map idrparams = new HashMap();
+        Map<String, Object> idrparams = new HashMap<>();
         idrparams.put(ParameterHelper.PARAM_KEY_VID, VID);
         idrparams.put(ParameterHelper.PARAM_KEY_PID, PID);
         idCardReader = IDCardReaderFactory.createIDCardReader(this, TransportType.USB, idrparams);
@@ -162,7 +159,7 @@ public class ZKIDReaderActivity extends BaseActivity {
     }
 
     public void OpenDevice() {
-        if (bopen) {
+        if (bOpen) {
             textView.setText("设备已连接");
             return;
         }
@@ -183,15 +180,15 @@ public class ZKIDReaderActivity extends BaseActivity {
             };
             idCardReader.open(0);
             idCardReader.setIdCardReaderExceptionListener(listener);
-            bStoped = false;
+            bStopped = false;
             mReadCount = 0;
             writeLogToFile("连接设备成功");
             textView.setText("连接成功");
-            bopen = true;
+            bOpen = true;
             countdownLatch = new CountDownLatch(1);
             new Thread(new Runnable() {
                 public void run() {
-                    while (!bStoped) {
+                    while (!bStopped) {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
@@ -213,7 +210,9 @@ public class ZKIDReaderActivity extends BaseActivity {
                         }
                         int retType = 0;
                         try {
-                            retType = idCardReader.readCardEx(0, 0);
+                            if (authenticate()) {
+                                retType = idCardReader.readCardEx(0, 0);
+                            }
                         } catch (IDCardReaderException e) {
                             writeLogToFile("读卡失败，错误信息：" + e.getMessage());
                         }
@@ -317,7 +316,7 @@ public class ZKIDReaderActivity extends BaseActivity {
     }
 
     public void OnBnBegin(View view) throws IDCardReaderException {
-        if (bopen) {
+        if (bOpen) {
             textView.setText("设备已连接");
             return;
         }
@@ -326,10 +325,10 @@ public class ZKIDReaderActivity extends BaseActivity {
     }
 
     private void CloseDevice() {
-        if (!bopen) {
+        if (!bOpen) {
             return;
         }
-        bStoped = true;
+        bStopped = true;
         mReadCount = 0;
         if (null != countdownLatch) {
             try {
@@ -343,12 +342,12 @@ public class ZKIDReaderActivity extends BaseActivity {
         } catch (IDCardReaderException e) {
             e.printStackTrace();
         }
-        bopen = false;
+        bOpen = false;
     }
 
 
     public void OnBnStop(View view) {
-        if (!bopen) {
+        if (!bOpen) {
             return;
         }
         CloseDevice();

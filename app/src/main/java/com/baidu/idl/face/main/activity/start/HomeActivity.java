@@ -40,6 +40,7 @@ import com.baidu.idl.face.main.activity.testimony.FaceDepthTestimonyActivity;
 import com.baidu.idl.face.main.activity.testimony.FaceIRTestimonyActivity;
 import com.baidu.idl.face.main.activity.testimony.FaceRGBPersonActivity;
 import com.baidu.idl.face.main.activity.testimony.IDReaderActivity;
+import com.baidu.idl.face.main.activity.testimony.IDReaderActivity2;
 import com.baidu.idl.face.main.activity.user.UserManagerActivity;
 import com.baidu.idl.face.main.activity.vbar.VBarActivity;
 import com.baidu.idl.face.main.activity.view.PlsyReaderActivity;
@@ -136,7 +137,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         RelativeLayout home_gateRl = findViewById(R.id.home_gateRl);
 //        home_gateRl.setOnClickListener(this);
         RelativeLayout home_checkRl = findViewById(R.id.home_checkRl);
-//        home_checkRl.setOnClickListener(this);
+        home_checkRl.setOnClickListener(this);
         RelativeLayout home_payRl = findViewById(R.id.home_payRl);
         home_payRl.setOnClickListener(this);
         RelativeLayout home_attributeRl = findViewById(R.id.home_attributeRl);
@@ -207,17 +208,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-                judgeLiveType(mLiveType,
-                        FaceRGBAttendanceActivity.class,
-                        FaceNIRAttendanceActivity.class,
-                        FaceDepthAttendanceActivity.class);
+//                judgeLiveType(mLiveType,
+//                        FaceRGBAttendanceActivity.class,
+//                        FaceNIRAttendanceActivity.class,
+//                        FaceDepthAttendanceActivity.class);
+                startActivity(new Intent(HomeActivity.this, ZKIDReaderActivity.class));
                 break;
             case R.id.home_payRl:
                 // 支付模块
                 if (!initSuccess()) {
                     return;
                 }
-                startActivity(new Intent(HomeActivity.this, ZKIDReaderActivity.class));
+                startActivity(new Intent(HomeActivity.this, IDReaderActivity2.class));
 //                judgeLiveType(mLiveType,
 //                        FaceRGBPaymentActivity.class,
 //                        FaceNIRPaymentActivity.class,
@@ -236,10 +238,10 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-                judgeLiveType(mLiveType,
-                        FaceRGBPersonActivity.class,
-                        FaceIRTestimonyActivity.class,
-                        FaceDepthTestimonyActivity.class);
+//                judgeLiveType(mLiveType,
+//                        FaceRGBPersonActivity.class,
+//                        FaceIRTestimonyActivity.class,
+//                        FaceDepthTestimonyActivity.class);
                 startActivity(new Intent(HomeActivity.this, IDReaderActivity.class));
                 break;
             case R.id.home_driveRl:

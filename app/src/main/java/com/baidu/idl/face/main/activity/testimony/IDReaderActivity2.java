@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -19,6 +20,7 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -27,15 +29,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baidu.idl.face.main.Config;
 import com.baidu.idl.face.main.R;
 import com.baidu.idl.face.main.activity.BaseActivity;
-import com.baidu.idl.face.main.activity.model.AppendLogEvent;
 import com.baidu.idl.face.main.activity.model.DeviceParamBean;
-import com.baidu.idl.face.main.activity.presenter.ReaderPresenter;
+import com.baidu.idl.face.main.activity.scangun.ScanGun;
 import com.baidu.idl.face.main.activity.setting.SettingMainActivity;
 import com.baidu.idl.face.main.activity.vbar.Vbar;
-import com.baidu.idl.face.main.activity.view.IReaderView;
 import com.baidu.idl.face.main.callback.CameraDataCallback;
 import com.baidu.idl.face.main.callback.FaceDetectCallBack;
 import com.baidu.idl.face.main.callback.FaceFeatureCallBack;
@@ -50,41 +49,30 @@ import com.baidu.idl.face.main.utils.BitmapUtils;
 import com.baidu.idl.face.main.utils.DensityUtils;
 import com.baidu.idl.face.main.utils.FaceOnDrawTexturViewUtil;
 import com.baidu.idl.face.main.utils.OnResultListener;
-import com.baidu.idl.face.main.utils.Utils;
 import com.baidu.idl.face.main.view.PreviewTexture;
 import com.baidu.idl.main.facesdk.FaceInfo;
 import com.baidu.idl.main.facesdk.model.BDFaceImageInstance;
 import com.baidu.idl.main.facesdk.model.BDFaceSDKCommon;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.routon.plsy.reader.sdk.common.Info;
-
-import org.json.JSONObject;
+import com.zkteco.android.IDReader.IDPhotoHelper;
+import com.zkteco.android.IDReader.WLTService;
+import com.zkteco.android.biometric.core.device.ParameterHelper;
+import com.zkteco.android.biometric.core.device.TransportType;
+import com.zkteco.android.biometric.core.utils.LogHelper;
+import com.zkteco.android.biometric.module.idcard.IDCardReader;
+import com.zkteco.android.biometric.module.idcard.IDCardReaderExceptionListener;
+import com.zkteco.android.biometric.module.idcard.IDCardReaderFactory;
+import com.zkteco.android.biometric.module.idcard.exception.IDCardReaderException;
+import com.zkteco.android.biometric.module.idcard.meta.IDCardInfo;
+import com.zkteco.android.biometric.module.idcard.meta.IDPRPCardInfo;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-public class IDReaderActivity extends BaseActivity implements View.OnClickListener, IReaderView {
-    private static final String TAG = IDReaderActivity.class.getSimpleName();
-    private static final int PICK_PHOTO_FRIST = 100;
-    private static final int PICK_VIDEO_FRIST = 101;
-
-    private volatile boolean firstFeatureFinished = false;
-    private volatile boolean secondFeatureFinished = false;
+public class IDReaderActivity2 extends BaseActivity implements View.OnClickListener, ScanGun.ScanGunCallBack {
+    private static final String TAG = IDReaderActivity2.class.getSimpleName();
 
     private byte[] firstFeature = new byte[512];
     private byte[] secondFeature = new byte[512];
@@ -102,15 +90,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private AutoTexturePreviewView mPreviewView;
     private ImageView testImageview;
     private TextureView mDrawDetectFaceView;
-//    private ImageView testimonyPreviewLineIv;
-//    private ImageView testimonyDevelopmentLineIv;
     // 图片越大，性能消耗越大，也可以选择640*480， 1280*720
     private static final int PREFER_WIDTH = SingleBaseConfig.getBaseConfig().getRgbAndNirWidth();
     private static final int PREFER_HEIGHT = SingleBaseConfig.getBaseConfig().getRgbAndNirHeight();
-    // 判断摄像头数据源
-    private int camemra1DataMean;
-    private int camemra2DataMean;
-    private volatile boolean camemra1IsRgb = false;
     // 摄像头采集数据
     private volatile byte[] rgbData;
     private volatile byte[] irData;
@@ -121,30 +103,16 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private RelativeLayout livenessTipsFailRl;
     private TextView livenessTipsFailTv;
     private TextView livenessTipsPleaseFailTv;
-    private TextView tv_nir_live_time;
     private TextureView irTexture;
     float score = 0;
-//    private TextView testimonyDevelopmentTv;
-//    private TextView testimonyPreviewTv;
 
     // 定义一个变量判断是预览模式还是开发模式
     boolean isDevelopment = false;
-    //    private LinearLayout livenessButtomLl;
     private RelativeLayout kaifaRelativeLayout;
     private RelativeLayout test_nir_rl;
     private RelativeLayout test_rgb_ir_rl;
     private TextView hintAdainTv;
-    private TextView livenessBaiduTv;
-    private View view;
     private RelativeLayout layoutCompareStatus;
-    private TextView textCompareStatus;
-    private ImageView test_nir_iv;
-    private ImageView test_rgb_iv;
-    private TextView tv_feature_time;
-    private TextView tv_feature_search_time;
-    private TextView tv_all_time;
-    private RelativeLayout hintShowRl;
-    private RelativeLayout developmentAddRl;
     private float rgbLiveScore;
     private float nirLiveScore;
     // 判断是否有人脸
@@ -152,15 +120,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private ImageView livenessTipsFailIv;
     private float nirLivenessScore = 0.0f;
     private float rgbLivenessScore = 0.0f;
-    // 特征比对
-    private long endCompareTime;
-    // 特征提取
-    private long featureTime;
-
 
     private TextView mTvIDCardNo;
     private TextView mTvUserName;
-    private ReaderPresenter mReaderPresenter;
     private boolean isReqUSBPermission = false;
     private Bitmap mIdCardPhoto;
     private int mDeviceType = DeviceParamBean.DEV_TYPE_INNER_OR_HID;
@@ -174,7 +136,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
     private Vbar vbar;
     private boolean state;
-    private Thread vbarThread;
     //    private String eid;
     private String pclass;
     private long mQRTime;
@@ -186,29 +147,53 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private boolean isQrFaceDetect = false;
 
     private UsbManager mUsbManager;
-    private static final String ACTION_USB_PERMISSION = "com.baidu.idl.face.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "com.example.scarx.idcardreader.USB_PERMISSION";
+
+    // --------------------
+
+    private static final int VID = 1024;    //IDR VID
+    private static final int PID = 50010;     //IDR PID
+    private IDCardReader idCardReader = null;
+    private ScanGun mScanGun;
+
+    private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Log.e("ACTION", action);
+
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        openDevice();
+                    } else {
+                        Toast.makeText(mContext, "USB未授权", Toast.LENGTH_SHORT).show();
+                        //mTxtReport.setText("USB未授权");
+                    }
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_face_ir_idreader);
-        mContext = this;
+        mContext = getApplicationContext();
         mHandler = new Handler();
 
-        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-
-
-        if (mUsbManager != null) {
-            for (UsbDevice device : mUsbManager.getDeviceList().values()) {
-                Log.e("USB ==== ", "vid: " + device.getVendorId() + " pid:" + device.getProductId());
-                if (device.getVendorId() == 3141 && device.getProductId() == 57616) {
-                    Intent intent = new Intent(ACTION_USB_PERMISSION);
-                    PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-                    mUsbManager.requestPermission(device, mPermissionIntent);
-                    Log.d(TAG, "QRCode device: checked");
-                }
-            }
-        }
+//        if (mUsbManager != null) {
+//            for (UsbDevice device : mUsbManager.getDeviceList().values()) {
+//                Log.e("USB ==== ", "vid: " + device.getVendorId() + " pid:" + device.getProductId());
+//                if (device.getVendorId() == 3141 && device.getProductId() == 57616) {
+//                    Intent intent = new Intent(ACTION_USB_PERMISSION);
+//                    PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+//                    mUsbManager.requestPermission(device, mPermissionIntent);
+//                    Log.d(TAG, "QRCode device: checked");
+//                }
+//            }
+//        }
 
         initView();
 
@@ -229,51 +214,165 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             livenessRl.setLayoutParams(params);
         }
 
-        registerReceiver();
+
+        requestDevicePermission();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
+        mContext.registerReceiver(mUsbReceiver, filter);
 
     }
 
-    private VBarBroadcastReceiver mUsbReceiver;
+    private void requestDevicePermission() {
+        mUsbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
 
-    private class VBarBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            Log.e("VBAR ===== ", device.getVendorId() + " " + device.getProductId());
-            if (device.getVendorId() == 1317 && device.getProductId() == 42156) {
-                switch (intent.getAction()) {
-                    case UsbManager.ACTION_USB_DEVICE_ATTACHED: // 插入USB设备
-                        Toast.makeText(context, "VBAR ATTACHED", Toast.LENGTH_SHORT).show();
-                        if (vbarThread != null) {
-                            vbarThread.interrupt();
-                        }
-                        if (vbar != null) {
-                            vbar.closeDev();
-                        }
-                        initVBar();
-                        break;
-                    case UsbManager.ACTION_USB_DEVICE_DETACHED: // 拔出USB设备
-                        Toast.makeText(context, "VBAR DETACHED", Toast.LENGTH_SHORT).show();
-
-                        break;
-                    default:
-                        break;
-                }
+        for (UsbDevice device : mUsbManager.getDeviceList().values()) {
+            if (device.getVendorId() == VID && device.getProductId() == PID) {
+                Intent intent = new Intent(ACTION_USB_PERMISSION);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent, 0);
+                mUsbManager.requestPermission(device, pendingIntent);
             }
         }
     }
 
-    public void registerReceiver() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        mUsbReceiver = new VBarBroadcastReceiver();
-        mContext.registerReceiver(mUsbReceiver, filter);
+
+    private boolean authenticate() {
+        try {
+            idCardReader.findCard(0);
+            idCardReader.selectCard(0);
+            return true;
+        } catch (IDCardReaderException e) {
+            return false;
+        }
     }
 
+    private void openDevice() {
+        try {
+            startIDCardReader();
+            IDCardReaderExceptionListener listener = new IDCardReaderExceptionListener() {
+                @Override
+                public void OnException() {
+                    //出现异常，关闭设备
+//                    CloseDevice(); // TODO
+                }
+            };
+            idCardReader.open(0);
+            idCardReader.setIdCardReaderExceptionListener(listener);
+            new Thread(new Runnable() {
+                public void run() {
+                    while (true) {
+                        int retType = 0;
+                        try {
+                            if (authenticate()) {
+                                retType = idCardReader.readCardEx(0, 0);
+                            }
+                        } catch (IDCardReaderException e) {
+                            Log.e(TAG, e.toString());
+                        }
+                        if (retType == 1 || retType == 2 || retType == 3) {
+                            isQrFaceDetect = false;
+                            pclass = "刷身份证";
+
+                            updateIDCardInfo(retType);
+
+                            final IDCardInfo idCardInfo = idCardReader.getLastIDCardInfo();
+
+                            HttpRequester.requestUserById(new OnResultListener<List<User>>() {
+                                @Override
+                                public void onResult(List<User> result) {
+                                    checkable = true;
+
+                                    if (result != null && result.size() > 0) {
+                                        if (mUser != null) {
+                                            lastUserIdNo = mUser.getIdCardNo();
+                                        }
+
+                                        // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
+                                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
+                                            mUserScanTime = System.currentTimeMillis();
+                                        }
+                                        mUser = result.get(0);
+
+                                        if (idCardInfo.getPhoto() != null) {
+                                            mIdCardPhoto = BitmapFactory.decodeByteArray(idCardInfo.getPhoto(), 0, idCardInfo.getPhoto().length);
+                                            FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
+
+                                            if (TextUtils.isEmpty(mUser.getImage())) {
+                                                HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
+                                                    @Override
+                                                    public void onResult(String result) {
+                                                        if (result.equals("0")) {
+                                                            // 如果更新成功，则人脸识别 TODO
+                                                            Log.e(TAG, result);
+                                                            toast("上传证件照成功");
+                                                        } else {
+                                                            toast("上传证件照失败，errCode: " + result);
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onError(FaceError error) {
+                                                        Log.e(TAG, error.getErrorMessage());
+                                                        toast(error.getErrorMessage());
+                                                    }
+                                                }, mIdCardPhoto, mUser);
+                                            }
+                                        } else {
+                                            toast("身份证照片读取失败");
+                                        }
+                                    } else {
+                                        toast("该用户不存在");
+                                    }
+                                }
+
+                                @Override
+                                public void onError(FaceError error) {
+                                    Log.e(TAG, "ERROR ===== " + error);
+                                }
+                            }, idCardInfo.getId());
+                        }
+                    }
+                }
+            }).start();
+        } catch (IDCardReaderException e) {
+            Log.e(TAG, e.toString());
+        }
+
+    }
+
+    private void startIDCardReader() {
+        if (null != idCardReader) {
+            IDCardReaderFactory.destroy(idCardReader);
+            idCardReader = null;
+        }
+        // Define output log level
+        LogHelper.setLevel(Log.VERBOSE);
+        // Start fingerprint sensor
+        Map<String, Object> idrparams = new HashMap<>();
+        idrparams.put(ParameterHelper.PARAM_KEY_VID, VID);
+        idrparams.put(ParameterHelper.PARAM_KEY_PID, PID);
+        idCardReader = IDCardReaderFactory.createIDCardReader(this, TransportType.USB, idrparams);
+    }
+
+
+//    private void CloseDevice() {
+//        if (!bOpen) {
+//            return;
+//        }
+//        bStopped = true;
+//        try {
+//            idCardReader.close(0);
+//        } catch (IDCardReaderException e) {
+//            e.printStackTrace();
+//        }
+//        bOpen = false;
+//    }
+
+
     private void unregisterReceiver() {
-        mContext.unregisterReceiver(mUsbReceiver);
+//        mContext.unregisterReceiver(mUsbReceiver);
     }
 
 
@@ -295,26 +394,13 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mDrawDetectFaceView = findViewById(R.id.texture_view_draw);
         mDrawDetectFaceView.setKeepScreenOn(true);
         mDrawDetectFaceView.setOpaque(false);
-        // 百度
-        livenessBaiduTv = findViewById(R.id.liveness_baiduTv);
-
-        view = findViewById(R.id.mongolia_view);
         // RGB 阈值
         rgbLiveScore = SingleBaseConfig.getBaseConfig().getRgbLiveScore();
         // Live 阈值
         nirLiveScore = SingleBaseConfig.getBaseConfig().getNirLiveScore();
-        /* title */
-        // 返回
-//        ImageView testimony_backIv = findViewById(R.id.btn_back);
-//        testimony_backIv.setOnClickListener(this);
-        // 预览模式
-//        testimonyPreviewTv = findViewById(R.id.preview_text);
-//        testimonyPreviewTv.setOnClickListener(this);
-//        testimonyPreviewLineIv = findViewById(R.id.preview_view);
         // 设置
         ImageView testimonySettingIv = findViewById(R.id.btn_setting);
         testimonySettingIv.setOnClickListener(this);
-
         mTvIDCardNo = findViewById(R.id.tvCardNo);
         mTvUserName = findViewById(R.id.tvUserName);
 
@@ -323,37 +409,24 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         // RGB
         testImageview = findViewById(R.id.test_rgb_ir_view);
         testImageview.setVisibility(View.GONE);
-        test_rgb_iv = findViewById(R.id.test_rgb_iv);
         // 开发模式buttom
         // 图片显示
         hintShowIv = findViewById(R.id.hint_showIv);
         // 重新上传
         hintAdainTv = findViewById(R.id.hint_adainTv);
         hintAdainTv.setOnClickListener(this);
-        hintShowRl = findViewById(R.id.hint_showRl);
         // 上传图片
         ImageView DevelopmentAddIv = findViewById(R.id.Development_addIv);
         DevelopmentAddIv.setOnClickListener(this);
-        developmentAddRl = findViewById(R.id.Development_addRl);
         // nir
         test_nir_rl = findViewById(R.id.test_nir_Rl);
         test_nir_rl.setVisibility(View.GONE);
         test_rgb_ir_rl = findViewById(R.id.test_rgb_ir_Rl);
         test_rgb_ir_rl.setVisibility(View.GONE);
-        test_nir_iv = findViewById(R.id.test_nir_iv);
         // 提示
         layoutCompareStatus = findViewById(R.id.layout_compare_status);
-        textCompareStatus = findViewById(R.id.text_compare_status);
-        // 相似度分数
-        tv_nir_live_time = findViewById(R.id.tv_nir_live_time);
         // 活体检测耗时
         tv_nir_live_score = findViewById(R.id.tv_nir_live_score);
-        // 特征抽取耗时
-        tv_feature_time = findViewById(R.id.tv_feature_time);
-        // 特征比对耗时
-        tv_feature_search_time = findViewById(R.id.tv_feature_search_time);
-        // 总耗时
-        tv_all_time = findViewById(R.id.tv_all_time);
 
         // ****************预览模式****************
         // 未通过提示
@@ -361,16 +434,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         livenessTipsFailTv = findViewById(R.id.liveness_tips_failTv);
         livenessTipsPleaseFailTv = findViewById(R.id.liveness_tips_please_failTv);
         livenessTipsFailIv = findViewById(R.id.liveness_tips_failIv);
-        // 预览模式buttom
-//        livenessButtomLl = findViewById(R.id.liveness_buttomLl);
-//        kaifaRelativeLayout = findViewById(R.id.kaifa_relativeLayout);
-//        livenessAddIv = findViewById(R.id.liveness_addIv);
-//        livenessAddIv.setOnClickListener(this);
-//        livenessUpdateTv = findViewById(R.id.liveness_updateTv);
         livenessAgainRl = findViewById(R.id.liveness_againRl);
         livenessShowIv = findViewById(R.id.liveness_showIv);
-//        TextView livenessAgainTv = findViewById(R.id.liveness_againTv);
-//        livenessAgainTv.setOnClickListener(this);
         // 双摄像头
         mCameraNum = Camera.getNumberOfCameras();
         if (mCameraNum < 2) {
@@ -386,7 +451,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private void initVBar() {
         vbar = new Vbar();
         state = vbar.vbarOpen();
-        vbarThread = new Thread() {
+        new Thread() {
             @Override
             public void run() {
                 super.run();
@@ -400,7 +465,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                 Log.e(TAG, audienceCode);
                                 isQrFaceDetect = false;
 
-                                requestUserByAudienceCode(new OnResultListener<List<User>>() {
+                                HttpRequester.requestUserByAudienceCode(new OnResultListener<List<User>>() {
                                     @Override
                                     public void onResult(List<User> result) {
                                         pclass = "扫二维码";
@@ -457,82 +522,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 }
             }
         };
-        vbarThread.start();
     }
 
-    private void requestUserByAudienceCode(final OnResultListener<List<User>> listener, String audienceCode) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "getUsers")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            RequestBody body = new FormBody.Builder().add("audience_code", audienceCode).build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        List<User> userList = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<List<User>>() {
-                        }.getType());
-
-                        listener.onResult(userList);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
-//            Log.e(TAG, "===================" + s);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
-        if (mReaderPresenter == null) {
-            mReaderPresenter = new ReaderPresenter(this);
-        }
-        if (mDeviceType == DeviceParamBean.DEV_TYPE_INNER_OR_HID) {
-            appendLog(AppendLogEvent.LOG_CODE_ANY, "startReadcard");
-            DeviceParamBean devParamBean = new DeviceParamBean();
-            devParamBean.setDeviceType(mDeviceType);
-            mReaderPresenter.startReadcard(devParamBean);
-        }
 
         if (mCameraNum < 2) {
             toast("未检测到2个摄像头");
@@ -552,7 +547,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             }
         }
 
-        initVBar();
+        ScanGun.setMaxKeysInterval(50);
+        mScanGun = new ScanGun(this);
 
     }
 
@@ -577,12 +573,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     @Override
     protected void onDestroy() {
 //        EventBus.getDefault().unregister(this);
-        if (vbarThread != null) {
-            vbarThread.interrupt();
-        }
-        if (vbar != null) {
-            vbar.closeDev();
-        }
+//        if (vbarThread != null) {
+//            vbarThread.interrupt();
+//        }
+//        if (vbar != null) {
+//            vbar.closeDev();
+//        }
 
         unregisterReceiver(); // TODO
 
@@ -594,7 +590,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         //如果不是因为请求USB权限导致的Pause，才释放资源
         Log.d(TAG, "onPause isReqUSBPermission?" + isReqUSBPermission);
 
-//      CameraPreviewManager.getInstance().stopPreview();
         if (mCameraNum > 0) {
             for (int i = 0; i < mCameraNum; i++) {
                 if (mCamera[i] != null) {
@@ -610,20 +605,20 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             isReqUSBPermission = false;
         } else {
             //退出前要安全释放资源
-            uninit();
+//            uninit();
         }
         super.onPause();
     }
 
-    private void uninit() {
-        //退出前要安全释放资源
-        if (mReaderPresenter != null) {
-            mReaderPresenter.stopReadcard();
-            mReaderPresenter.release();
-            mReaderPresenter = null;
-        }
-//        uninitBT();
-    }
+//    private void uninit() {
+//        //退出前要安全释放资源
+//        if (mReaderPresenter != null) {
+//            mReaderPresenter.stopReadcard();
+//            mReaderPresenter.release();
+//            mReaderPresenter = null;
+//        }
+////        uninitBT();
+//    }
 
     private void dealRgb(byte[] data) {
         rgbData = data;
@@ -647,7 +642,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private synchronized void checkData() {
         if (rgbData != null && irData != null) {
             if (livenessShowIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
-                firstFeatureFinished = false;
                 FaceSDKManager.getInstance().onDetectCheck(rgbData, irData, null,
                         PREFER_HEIGHT, PREFER_WIDTH, 3, new FaceDetectCallBack() {
                             @Override
@@ -668,14 +662,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                 rgbData = null;
                 irData = null;
-            } else {
-//                test_nir_iv.setVisibility(View.VISIBLE);
-//                test_rgb_iv.setVisibility(View.VISIBLE);
-//                testImageview.setImageResource(R.mipmap.ic_image_video);
-//                ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 0.85f, 0.0f);
-//                animator.setDuration(3000);
-//                view.setBackgroundColor(Color.parseColor("#ffffff"));
-//                animator.start();
             }
         }
     }
@@ -696,7 +682,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                 @Override
                                 public void onFaceFeatureCallBack(float featureSize,
                                                                   byte[] feature, long time) {
-                                    featureTime = time;
                                     firstFeature = feature;
                                     runOnUiThread(new Runnable() {
                                         @Override
@@ -706,7 +691,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                             score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                                                     BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO,
                                                     firstFeature, secondFeature, true);
-                                            endCompareTime = System.currentTimeMillis() - startCompareTime;
                                             if (!isDevelopment) {
                                                 layoutCompareStatus.setVisibility(View.GONE);
                                                 livenessTipsFailRl.setVisibility(View.VISIBLE);
@@ -784,7 +768,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         Log.e(TAG, "Delta: " + deltaTime);
                         if (deltaTime >= USER_SCAN_INTERVAL) {
                             mUserScanTime = System.currentTimeMillis();
-                            uploadPassRecord(new OnResultListener<String>() {
+                            HttpRequester.uploadPassRecord(new OnResultListener<String>() {
                                 @Override
                                 public void onResult(String result) {
                                     Log.e(TAG, result);
@@ -794,7 +778,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                 public void onError(FaceError error) {
                                     Log.e(TAG, error.toString());
                                 }
-                            }, eid, pclass);
+                            }, eid, pclass, mUser, mIdCardPhoto);
                         }
 
                     } catch (IOException e) {
@@ -802,76 +786,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
             }, 1000);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void uploadPassRecord(final OnResultListener<String> listener, String eid, String pclass) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "passRecord")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date today = Calendar.getInstance().getTime();
-            String todayAsString = df.format(today);
-
-            RequestBody body = new FormBody.Builder()
-                    .add("pimg", BitmapUtils.bitmapToBase64(mIdCardPhoto, 60))
-                    .add("user_id", mUser.getUserId())
-                    .add("user_name", mUser.getUserName())
-                    .add("pclass", pclass)
-                    .add("eid", eid)
-                    .add("ptime", todayAsString)
-                    .build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        String result = gson.fromJson(jsonObject.getString("code"), new TypeToken<String>() {
-                        }.getType());
-
-                        listener.onResult(result);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1021,8 +935,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
     private void displayCompareResult(float ret, byte[] faceFeature, LivenessModel model) {
         if (model == null) {
-//            mFaceRoundProView.setTipText("保持面部在取景框内");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
             return;
         }
 
@@ -1031,8 +943,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         if (ret == 128) {
             BDFaceImageInstance bdFaceImageInstance = model.getBdFaceImageInstance();
             if (bdFaceImageInstance == null) {
-//                mFaceRoundProView.setTipText("抠图失败");
-//                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                 return;
             }
 
@@ -1043,7 +953,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 mCollectSuccess = true;
                 livenessShowIv.setImageBitmap(mDetectedBitmap);
 
-                uploadIDPhoto(new OnResultListener<String>() {
+                HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
                     @Override
                     public void onResult(String result) {
                         Log.e(TAG, result);
@@ -1060,20 +970,14 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         toast(error.getErrorMessage());
                         Log.e(TAG, error.getErrorMessage());
                     }
-                }, mDetectedBitmap);
+                }, mDetectedBitmap, mUser);
             }
             bdFaceImageInstance.destory();
 
-//            mRelativeCollectSuccess.setVisibility(View.VISIBLE);
-//            mRelativePreview.setVisibility(View.GONE);
-//            mFaceRoundProView.setTipText("");
             for (int i = 0; i < faceFeature.length; i++) {
                 mFeatures[i] = faceFeature[i];
             }
 
-        } else {
-//            mFaceRoundProView.setTipText("特征提取失败");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
         }
     }
 
@@ -1091,90 +995,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 startActivity(new Intent(mContext, SettingMainActivity.class));
                 finish();
                 break;
-            // 预览模式
-            case R.id.preview_text:
-                isDevelopment = false;
-                if (livenessShowIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
-                    livenessTipsFailRl.setVisibility(View.VISIBLE);
-                    layoutCompareStatus.setVisibility(View.GONE);
-                } else {
-                    livenessTipsFailRl.setVisibility(View.GONE);
-                    layoutCompareStatus.setVisibility(View.GONE);
-                }
-//                testimonyPreviewLineIv.setVisibility(View.VISIBLE);
-//                testimonyDevelopmentLineIv.setVisibility(View.GONE);
-//                testimonyDevelopmentTv.setTextColor(Color.parseColor("#FF999999"));
-//                testimonyPreviewTv.setTextColor(getResources().getColor(R.color.white));
-                test_nir_rl.setVisibility(View.GONE);
-                test_rgb_ir_rl.setVisibility(View.GONE);
-//                livenessButtomLl.setVisibility(View.VISIBLE);
-                kaifaRelativeLayout.setVisibility(View.GONE);
-                livenessBaiduTv.setVisibility(View.VISIBLE);
-//                test_nir_view.setVisibility(View.GONE);
-                irTexture.setAlpha(0);
-                testImageview.setVisibility(View.GONE);
-                break;
-        }
-    }
 
-
-    private void requestUserById(final OnResultListener<List<User>> listener, String idCardNo) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "getUsers")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            RequestBody body = new FormBody.Builder().add("idCardNo", idCardNo).build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        List<User> userList = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<List<User>>() {
-                        }.getType());
-
-                        listener.onResult(userList);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
-//            Log.e(TAG, "===================" + s);
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -1288,192 +1109,98 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         });
     }
 
-    @Override
-    public Context getContext() {
-        return getApplicationContext();
-    }
 
-
-    @Override
-    public void onReadIDCardSuccess(final Info.IDCardInfo iDCardInfo) {
-        isQrFaceDetect = false;
-        pclass = "刷身份证";
-
-        if (iDCardInfo != null) {
-            updateIDCardInfo(iDCardInfo, true);
-
-            requestUserById(new OnResultListener<List<User>>() {
+    private void updateIDCardInfo(int retType) {
+        final long nTickStart = System.currentTimeMillis();
+        final long nTickUsed = (System.currentTimeMillis() - nTickStart);
+        if (retType == 1) {
+            final IDCardInfo idCardInfo = idCardReader.getLastIDCardInfo();
+            runOnUiThread(new Runnable() {
                 @Override
-                public void onResult(List<User> result) {
-                    checkable = true;
-
-                    if (result != null && result.size() > 0) {
-                        if (mUser != null) {
-                            lastUserIdNo = mUser.getIdCardNo();
+                public void run() {
+                    mTvIDCardNo.setText(idCardInfo.getId());
+                    mTvUserName.setText(idCardInfo.getName());
+                    if (idCardInfo.getPhotolength() > 0) {
+                        byte[] buf = new byte[WLTService.imgLength];
+                        if (1 == WLTService.wlt2Bmp(idCardInfo.getPhoto(), buf)) {
+                            livenessShowIv.setImageBitmap(IDPhotoHelper.Bgr2Bitmap(buf));
                         }
-
-                        // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                            mUserScanTime = System.currentTimeMillis();
-                        }
-                        mUser = result.get(0);
-
-                        if (iDCardInfo.photo != null) {
-                            mIdCardPhoto = iDCardInfo.photo;
-                            FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
-
-                            if (TextUtils.isEmpty(mUser.getImage())) {
-                                uploadIDPhoto(new OnResultListener<String>() {
-                                    @Override
-                                    public void onResult(String result) {
-                                        if (result.equals("0")) {
-                                            // 如果更新成功，则人脸识别 TODO
-                                            Log.e(TAG, result);
-                                            toast("上传证件照成功");
-                                        } else {
-                                            toast("上传证件照失败，errCode: " + result);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(FaceError error) {
-                                        Log.e(TAG, error.getErrorMessage());
-                                        toast(error.getErrorMessage());
-                                    }
-                                }, iDCardInfo.photo);
-                            }
-                        } else {
-                            toast("身份证照片读取失败");
-                        }
-                    } else {
-                        toast("该用户不存在");
                     }
+
                 }
-
+            });
+        } else if (retType == 2) {
+            final IDPRPCardInfo idprpCardInfo = idCardReader.getLastPRPIDCardInfo();
+            runOnUiThread(new Runnable() {
                 @Override
-                public void onError(FaceError error) {
-                    Log.e(TAG, "ERROR ===== " + error);
-                }
-            }, iDCardInfo.id);
-        }
-
-    }
-
-    private void uploadIDPhoto(final OnResultListener<String> listener, Bitmap photo) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "userEdit")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            String img = BitmapUtils.bitmapToBase64(photo, 60);
-            Log.e(TAG, "image ======== " + img);
-
-            RequestBody body = new FormBody.Builder()
-                    .add("image", img)
-                    .add("group_id", mUser.getGroupId())
-                    .add("user_id", mUser.getUserId())
-                    .add("user_info", mUser.getUserInfo())
-                    .add("user_name", mUser.getUserName())
-                    .add("item_eid", mUser.getItemEId())
-                    .add("idCardNo", mUser.getIdCardNo())
-                    .add("audience_code", mUser.getAudienceCode())
-                    .build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-//                        BaseHttpResult result = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<BaseHttpResult>() {
-//                        }.getType());
-                        Log.e(TAG, "errMsg ===" + jsonObject.getString("msg"));
-                        String result = gson.fromJson(jsonObject.getString("code"), new TypeToken<String>() {
-                        }.getType());
-                        listener.onResult(result);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
+                public void run() {
+                    mTvIDCardNo.setText(idprpCardInfo.getId());
+                    mTvUserName.setText(idprpCardInfo.getCnName());
+                    if (idprpCardInfo.getPhotolength() > 0) {
+                        byte[] buf = new byte[WLTService.imgLength];
+                        if (1 == WLTService.wlt2Bmp(idprpCardInfo.getPhoto(), buf)) {
+                            livenessShowIv.setImageBitmap(IDPhotoHelper.Bgr2Bitmap(buf));
+                        }
                     }
                 }
             });
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else if (retType == 3) {
+            final IDCardInfo idCardInfo = idCardReader.getLastIDCardInfo();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mTvIDCardNo.setText(idCardInfo.getId());
+                    mTvUserName.setText(idCardInfo.getName());
+                    if (idCardInfo.getPhotolength() > 0) {
+                        byte[] buf = new byte[WLTService.imgLength];
+                        if (1 == WLTService.wlt2Bmp(idCardInfo.getPhoto(), buf)) {
+                            livenessShowIv.setImageBitmap(IDPhotoHelper.Bgr2Bitmap(buf));
+                        }
+                    }
+                }
+            });
         }
+
     }
 
-    private void updateIDCardInfo(final Info.IDCardInfo idCardInfo, boolean display) {
-        if (display) {
-            if (idCardInfo.cardType == Info.ID_CARD_TYPE_CHINA) {// 身份证
-                livenessShowIv.setImageBitmap(idCardInfo.photo);
-                mTvIDCardNo.setText(idCardInfo.id);
-                mTvUserName.setText(idCardInfo.name);
-            } else if (idCardInfo.cardType == Info.ID_CARD_TYPE_FOREIGN) {// 外国人证
-                mTvUserName.setText(idCardInfo.englishName);
-            } else if (idCardInfo.cardType == Info.ID_CARD_TYPE_GAT) {// 港澳通行证
-                mTvIDCardNo.setText(idCardInfo.passportNum);
-                mTvUserName.setText(idCardInfo.name);
+    @Override
+    public void onScanFinish(String audienceCode) {
+        Log.e("OnScanFinish", audienceCode);
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Log.d("jason","onKeyDown");
+        //  Log.d("jason","main  KeyCode :  " + keyCode );
+
+        if (!isQrFaceDetect)
+            return super.onKeyDown(keyCode, event);
+
+        mScanGun.isScanning(keyCode, event);
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        // 拦截物理键盘事件
+        //  Log.d("jason","dispatchKeyEvent KeyCode :  " + event.getKeyCode() );
+
+        if (!isQrFaceDetect)
+            return super.dispatchKeyEvent(event);
+
+        if (event.getKeyCode() > 6) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {//将键盘的删除键传递下去
+                    return super.dispatchKeyEvent(event);
+                }
+                this.onKeyDown(event.getKeyCode(), event);
+            }
+        } else {
+            if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {//将键盘的返回事件传递下去
+                return super.dispatchKeyEvent(event);
             }
         }
-    }
-
-    @Override
-    public void onReadIDCardFailed() {
-        Log.d(TAG, "read card fail");
-    }
-
-    @Override
-    public void onCardRemoved() {
-        Log.d(TAG, "card removed");
-    }
-
-    @Override
-    public void appendLog(int code, String log) {
-
-    }
-
-    @Override
-    public void onGotStartReadcardResult(int error_code, boolean has_inner_reader) {
-
-    }
-
-    @Override
-    public void onReadACardSuccess(byte[] card_sn) {
-
-    }
-
-    @Override
-    public void onReaderStopped() {
-        Log.d(TAG, "onReaderStopped");
+        return true;
     }
 }

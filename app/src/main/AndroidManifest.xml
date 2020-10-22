@@ -109,6 +109,7 @@
         <activity android:name=".activity.testimony.IDReaderActivity" />
         <activity android:name=".activity.payment.ZKIDReaderActivity" />
         <activity android:name=".activity.scangun.ScanGunActivity" />
+        <activity android:name=".activity.testimony.IDReaderActivity2" />
 
         <receiver
             android:name="com.baidu.liantian.LiantianReceiver"
