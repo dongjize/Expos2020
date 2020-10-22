@@ -157,7 +157,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     // 特征提取
     private long featureTime;
 
-
     private TextView mTvIDCardNo;
     private TextView mTvUserName;
     private ReaderPresenter mReaderPresenter;
@@ -255,7 +254,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         break;
                     case UsbManager.ACTION_USB_DEVICE_DETACHED: // 拔出USB设备
                         Toast.makeText(context, "VBAR DETACHED", Toast.LENGTH_SHORT).show();
-
                         break;
                     default:
                         break;
@@ -376,7 +374,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mCameraNum = Camera.getNumberOfCameras();
         if (mCameraNum < 2) {
             toast("未检测到2个摄像头");
-            return;
         } else {
             mPreview = new PreviewTexture[mCameraNum];
             mCamera = new Camera[mCameraNum];
@@ -394,7 +391,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 super.run();
                 while (true) {
                     final String audienceCode = vbar.getResultsingle();
+                    Log.e(TAG, "===============" + audienceCode);
                     if (audienceCode != null && System.currentTimeMillis() - mQRTime > USER_SCAN_INTERVAL) {
+
                         mQRTime = System.currentTimeMillis();
                         checkable = true;
                         runOnUiThread(new Runnable() {
@@ -407,11 +406,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                     public void onResult(List<User> result) {
                                         pclass = "扫二维码";
                                         if (result != null && result.size() > 0) {
-
                                             if (mUser != null) {
                                                 lastUserIdNo = mUser.getIdCardNo();
                                             }
-
                                             // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
                                             if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
                                                 mUserScanTime = System.currentTimeMillis();
@@ -828,11 +825,11 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
             RequestBody body = new FormBody.Builder()
                     .add("pimg", BitmapUtils.bitmapToBase64(mIdCardPhoto, 60))
-                    .add("user_id", mUser.getUserId())
-                    .add("user_name", mUser.getUserName())
-                    .add("pclass", pclass)
-                    .add("eid", eid)
-                    .add("ptime", todayAsString)
+                    .add("user_id", mUser.getUserId() == null ? "" : mUser.getUserId())
+                    .add("user_name", mUser.getUserName() == null ? "" : mUser.getUserName())
+                    .add("pclass", pclass == null ? "" : pclass)
+                    .add("eid", eid == null ? "" : eid)
+                    .add("ptime", todayAsString == null ? "" : todayAsString)
                     .build();
 
             final Request request = new Request.Builder()
@@ -1152,7 +1149,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
+                    if (response.body() == null || TextUtils.isEmpty(haha)) {
                         FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
                         listener.onError(error);
 
@@ -1378,13 +1375,13 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
             RequestBody body = new FormBody.Builder()
                     .add("image", img)
-                    .add("group_id", mUser.getGroupId())
-                    .add("user_id", mUser.getUserId())
-                    .add("user_info", mUser.getUserInfo())
-                    .add("user_name", mUser.getUserName())
-                    .add("item_eid", mUser.getItemEId())
-                    .add("idCardNo", mUser.getIdCardNo())
-                    .add("audience_code", mUser.getAudienceCode())
+                    .add("group_id", mUser.getGroupId() == null ? "" : mUser.getGroupId())
+                    .add("user_id", mUser.getUserId() == null ? "" : mUser.getUserId())
+                    .add("user_info", mUser.getUserInfo() == null ? "" : mUser.getUserInfo())
+                    .add("user_name", mUser.getUserName() == null ? "" : mUser.getUserName())
+                    .add("item_eid", mUser.getItemEId() == null ? "" : mUser.getItemEId())
+                    .add("idCardNo", mUser.getIdCardNo() == null ? "" : mUser.getIdCardNo())
+                    .add("audience_code", mUser.getAudienceCode() == null ? "" : mUser.getAudienceCode())
                     .build();
 
             final Request request = new Request.Builder()
@@ -1405,7 +1402,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
+                    if (response.body() == null || TextUtils.isEmpty(haha)) {
                         FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
                         listener.onError(error);
 

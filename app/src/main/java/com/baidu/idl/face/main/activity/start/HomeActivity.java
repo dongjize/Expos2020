@@ -82,10 +82,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             editor.commit();
         }
 
-
 //        String accessToken = AuthService.getAuth();
 //        Log.e(TAG, accessToken);
-
 
     }
 
@@ -232,10 +230,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-                judgeLiveType(mLiveType,
-                        FaceRGBPersonActivity.class,
-                        FaceIRTestimonyActivity.class,
-                        FaceDepthTestimonyActivity.class);
                 startActivity(new Intent(HomeActivity.this, IDReaderActivity.class));
                 break;
             case R.id.home_driveRl:
