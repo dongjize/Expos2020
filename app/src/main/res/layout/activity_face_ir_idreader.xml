@@ -225,7 +225,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="身份证照片"
+                        android:text="用户照片"
                         android:textColor="@color/white"
                         android:layout_below="@id/liveness_showIv"
                         android:layout_centerHorizontal="true"/>

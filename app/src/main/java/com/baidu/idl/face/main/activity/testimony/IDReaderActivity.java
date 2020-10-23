@@ -114,7 +114,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     // 摄像头采集数据
     private volatile byte[] rgbData;
     private volatile byte[] irData;
-    private ImageView idCardPhotoIv; //身份证照片
+    private ImageView idCardPhotoIv; //用户照片
     private ImageView livePhotoIv; //现场照片
     private ImageView hintShowIv;
     private TextView tv_nir_live_score;
@@ -152,10 +152,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private ImageView livenessTipsFailIv;
     private float nirLivenessScore = 0.0f;
     private float rgbLivenessScore = 0.0f;
-    // 特征比对
-    private long endCompareTime;
-    // 特征提取
-    private long featureTime;
 
     private TextView mTvIDCardNo;
     private TextView mTvUserName;
@@ -165,7 +161,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private int mDeviceType = DeviceParamBean.DEV_TYPE_INNER_OR_HID;
     private Handler mHandler;
     private long mLastOpenTime = 0;
-    private long mUserScanTime = 0;
+    private long mScanTime = 0;
     private User mUser;
     private String lastUserIdNo;
     private static final int USER_SCAN_INTERVAL = 3 * 1000;
@@ -176,7 +172,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private Thread vbarThread;
     //    private String eid;
     private String pclass;
-    private long mQRTime;
 
     private float[] mPointXY = new float[4];
     private byte[] mFeatures = new byte[512];
@@ -382,9 +377,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 super.run();
                 while (true) {
                     final String audienceCode = vbar.getResultsingle();
-                    if (audienceCode != null && System.currentTimeMillis() - mQRTime > USER_SCAN_INTERVAL) {
+                    if (audienceCode != null && System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
 
-                        mQRTime = System.currentTimeMillis();
+                        mScanTime = System.currentTimeMillis();
                         checkable = true;
                         runOnUiThread(new Runnable() {
                             public void run() {
@@ -400,8 +395,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                 lastUserIdNo = mUser.getIdCardNo();
                                             }
                                             // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                                            if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                                                mUserScanTime = 0;
+                                            if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+                                                mScanTime = 0;
                                             }
                                             mUser = result.get(0);
                                             runOnUiThread(new Runnable() {
@@ -677,7 +672,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                 @Override
                                 public void onFaceFeatureCallBack(float featureSize,
                                                                   byte[] feature, long time) {
-                                    featureTime = time;
                                     firstFeature = feature;
                                     runOnUiThread(new Runnable() {
                                         @Override
@@ -687,51 +681,48 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                             score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                                                     BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO,
                                                     firstFeature, secondFeature, true);
-                                            endCompareTime = System.currentTimeMillis() - startCompareTime;
-                                            if (!isDevelopment) {
-                                                layoutCompareStatus.setVisibility(View.GONE);
-                                                livenessTipsFailRl.setVisibility(View.VISIBLE);
-                                                if (isFace) {
-                                                    livenessTipsFailTv.setText("上传图片不包含人脸");
-                                                    livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
-                                                    livenessTipsPleaseFailTv.setText("无法进行人证比对");
-                                                    livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
-                                                } else {
-                                                    rgbLivenessScore = livenessModel.getRgbLivenessScore();
-                                                    nirLivenessScore = livenessModel.getIrLivenessScore();
-                                                    if (rgbLivenessScore > rgbLiveScore && nirLivenessScore >
-                                                            nirLiveScore) {
-                                                        if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
-                                                            BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
-                                                            if (image != null && livePhotoIv.getDrawable() == null) {
-                                                                livePhotoIv.setImageBitmap(BitmapUtils.getInstaceBmp(image));
-                                                                image.destory();
-                                                            }
 
-                                                            livenessTipsFailTv.setText("人证核验通过");
-                                                            livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
-                                                            livenessTipsPleaseFailTv.setText("识别成功");
-                                                            livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
-
-                                                            if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
-                                                                openDoor(mUser.getItemEId(), pclass); // TODO
-                                                            }
-
-                                                        } else {
-                                                            livenessTipsFailTv.setText("人证核验未通过");
-                                                            livenessTipsFailTv.setTextColor(
-                                                                    Color.parseColor("#FFFEC133"));
-                                                            livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
-                                                            livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+                                            layoutCompareStatus.setVisibility(View.GONE);
+                                            livenessTipsFailRl.setVisibility(View.VISIBLE);
+                                            if (isFace) {
+                                                livenessTipsFailTv.setText("上传图片不包含人脸");
+                                                livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+                                                livenessTipsPleaseFailTv.setText("无法进行人证比对");
+                                                livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+                                            } else {
+                                                rgbLivenessScore = livenessModel.getRgbLivenessScore();
+                                                nirLivenessScore = livenessModel.getIrLivenessScore();
+                                                if (rgbLivenessScore > rgbLiveScore && nirLivenessScore >
+                                                        nirLiveScore) {
+                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
+                                                        BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
+                                                        if (image != null && livePhotoIv.getDrawable() == null) {
+                                                            livePhotoIv.setImageBitmap(BitmapUtils.getInstaceBmp(image));
+                                                            image.destory();
                                                         }
+
+                                                        livenessTipsFailTv.setText("人证核验通过");
+                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
+                                                        livenessTipsPleaseFailTv.setText("识别成功");
+                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
+
+                                                        if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
+                                                            openDoor(mUser.getItemEId(), pclass); // TODO
+                                                        }
+
                                                     } else {
                                                         livenessTipsFailTv.setText("人证核验未通过");
-                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+                                                        livenessTipsFailTv.setTextColor(
+                                                                Color.parseColor("#FFFEC133"));
                                                         livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
                                                         livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
                                                     }
+                                                } else {
+                                                    livenessTipsFailTv.setText("人证核验未通过");
+                                                    livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+                                                    livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
+                                                    livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
                                                 }
-
                                             }
 
                                             mHandler.postDelayed(new Runnable() {
@@ -741,7 +732,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                     mTvUserName.setText("");
                                                     idCardPhotoIv.setImageBitmap(null);
                                                     livePhotoIv.setImageDrawable(null);
-                                                    checkable = false;
                                                 }
                                             }, 5 * 1000);
                                         }
@@ -758,6 +748,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             final FileOutputStream fos1 = new FileOutputStream("/sys/exgpio/relay1");
             fos1.write("1".getBytes());
             Log.e(TAG, "OPEN");
+            checkable = false;
 
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -768,10 +759,10 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         fos1.close();
                         mLastOpenTime = System.currentTimeMillis();
 
-                        long deltaTime = System.currentTimeMillis() - mUserScanTime;
+                        long deltaTime = System.currentTimeMillis() - mScanTime;
                         Log.e(TAG, "Delta: " + deltaTime);
                         if (deltaTime >= USER_SCAN_INTERVAL) {
-                            mUserScanTime = System.currentTimeMillis();
+                            mScanTime = System.currentTimeMillis();
                             uploadPassRecord(new OnResultListener<String>() {
                                 @Override
                                 public void onResult(String result) {
@@ -1259,8 +1250,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         }
 
                         // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                            mUserScanTime = 0;
+                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+                            mScanTime = 0;
                         }
                         mUser = result.get(0);
 
