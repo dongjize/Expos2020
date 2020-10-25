@@ -379,7 +379,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                     final String audienceCode = vbar.getResultsingle();
                     if (audienceCode != null && System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
 
-                        mScanTime = System.currentTimeMillis();
                         checkable = true;
                         runOnUiThread(new Runnable() {
                             public void run() {
@@ -670,14 +669,11 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                             BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO, new FaceFeatureCallBack() {
 
                                 @Override
-                                public void onFaceFeatureCallBack(float featureSize,
-                                                                  byte[] feature, long time) {
+                                public void onFaceFeatureCallBack(float featureSize, byte[] feature, long time) {
                                     firstFeature = feature;
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            long startCompareTime = System.currentTimeMillis();
-
                                             score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                                                     BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO,
                                                     firstFeature, secondFeature, true);
@@ -696,24 +692,25 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                         nirLiveScore) {
                                                     if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
                                                         BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
-                                                        if (image != null && livePhotoIv.getDrawable() == null) {
-                                                            livePhotoIv.setImageBitmap(BitmapUtils.getInstaceBmp(image));
+
+                                                        if (image != null) {
+                                                            Bitmap livePhoto = BitmapUtils.scale(BitmapUtils.getInstaceBmp(image), 0.3F);
+                                                            if (livePhotoIv.getDrawable() == null) {
+                                                                livePhotoIv.setImageBitmap(livePhoto);
+                                                            }
+                                                            livenessTipsFailTv.setText("人证核验通过");
+                                                            livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
+                                                            livenessTipsPleaseFailTv.setText("识别成功");
+                                                            livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
+                                                            if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
+                                                                openDoor(mUser.getItemEId(), pclass, livePhoto);
+                                                            }
                                                             image.destory();
-                                                        }
-
-                                                        livenessTipsFailTv.setText("人证核验通过");
-                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
-                                                        livenessTipsPleaseFailTv.setText("识别成功");
-                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
-
-                                                        if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
-                                                            openDoor(mUser.getItemEId(), pclass); // TODO
                                                         }
 
                                                     } else {
                                                         livenessTipsFailTv.setText("人证核验未通过");
-                                                        livenessTipsFailTv.setTextColor(
-                                                                Color.parseColor("#FFFEC133"));
+                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
                                                         livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
                                                         livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
                                                     }
@@ -743,7 +740,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         });
     }
 
-    private void openDoor(final String eid, final String pclass) {
+    private void openDoor(final String eid, final String pclass, final Bitmap livePhoto) {
         try {
             final FileOutputStream fos1 = new FileOutputStream("/sys/exgpio/relay1");
             fos1.write("1".getBytes());
@@ -773,7 +770,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                 public void onError(FaceError error) {
                                     Log.e(TAG, error.toString());
                                 }
-                            }, eid, pclass);
+                            }, eid, pclass, livePhoto);
                         }
 
                     } catch (IOException e) {
@@ -787,7 +784,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-    private void uploadPassRecord(final OnResultListener<String> listener, String eid, String pclass) {
+    private void uploadPassRecord(final OnResultListener<String> listener, String eid, String pclass, Bitmap livePhoto) {
         try {
             OkHttpClient okHttpClient = new OkHttpClient();
 
@@ -804,7 +801,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             String todayAsString = df.format(today);
 
             RequestBody body = new FormBody.Builder()
-                    .add("pimg", BitmapUtils.bitmapToBase64(mUserCloudPhoto, 60))
+                    .add("pimg", BitmapUtils.bitmapToBase64(livePhoto, 30))
                     .add("user_id", mUser.getUserId() == null ? "" : mUser.getUserId())
                     .add("user_name", mUser.getUserName() == null ? "" : mUser.getUserName())
                     .add("pclass", pclass == null ? "" : pclass)

@@ -481,7 +481,6 @@ public final class BitmapUtils {
         bitmap.compress(Bitmap.CompressFormat.PNG, bitmapQuality, bStream);
         byte[] bytes = bStream.toByteArray();
         return Base64.encodeToString(bytes, Base64.NO_WRAP);
-
     }
 
     public static byte[] bitmapToBytes(Bitmap bm) {
