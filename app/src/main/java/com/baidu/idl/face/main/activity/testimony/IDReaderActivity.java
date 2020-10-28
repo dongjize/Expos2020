@@ -27,7 +27,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baidu.idl.face.main.Config;
 import com.baidu.idl.face.main.R;
 import com.baidu.idl.face.main.activity.BaseActivity;
 import com.baidu.idl.face.main.activity.model.AppendLogEvent;
@@ -55,36 +54,14 @@ import com.baidu.idl.face.main.view.PreviewTexture;
 import com.baidu.idl.main.facesdk.FaceInfo;
 import com.baidu.idl.main.facesdk.model.BDFaceImageInstance;
 import com.baidu.idl.main.facesdk.model.BDFaceSDKCommon;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.routon.plsy.reader.sdk.common.Info;
-
-import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class IDReaderActivity extends BaseActivity implements View.OnClickListener, IReaderView {
     private static final String TAG = IDReaderActivity.class.getSimpleName();
-    private static final int PICK_PHOTO_FRIST = 100;
-    private static final int PICK_VIDEO_FRIST = 101;
-
-    private volatile boolean firstFeatureFinished = false;
-    private volatile boolean secondFeatureFinished = false;
 
     private byte[] firstFeature = new byte[512];
     private byte[] secondFeature = new byte[512];
@@ -102,20 +79,16 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private AutoTexturePreviewView mPreviewView;
     private ImageView testImageview;
     private TextureView mDrawDetectFaceView;
-//    private ImageView testimonyPreviewLineIv;
+    //    private ImageView testimonyPreviewLineIv;
 //    private ImageView testimonyDevelopmentLineIv;
     // 图片越大，性能消耗越大，也可以选择640*480， 1280*720
     private static final int PREFER_WIDTH = SingleBaseConfig.getBaseConfig().getRgbAndNirWidth();
     private static final int PREFER_HEIGHT = SingleBaseConfig.getBaseConfig().getRgbAndNirHeight();
-    // 判断摄像头数据源
-    private int camemra1DataMean;
-    private int camemra2DataMean;
-    private volatile boolean camemra1IsRgb = false;
     // 摄像头采集数据
     private volatile byte[] rgbData;
     private volatile byte[] irData;
-    private RelativeLayout livenessAgainRl;
-    private ImageView livenessShowIv;
+    private ImageView idCardPhotoIv; //用户照片
+    private ImageView livePhotoIv; //现场照片
     private ImageView hintShowIv;
     private TextView tv_nir_live_score;
     private RelativeLayout livenessTipsFailRl;
@@ -124,8 +97,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private TextView tv_nir_live_time;
     private TextureView irTexture;
     float score = 0;
-//    private TextView testimonyDevelopmentTv;
-//    private TextView testimonyPreviewTv;
 
     // 定义一个变量判断是预览模式还是开发模式
     boolean isDevelopment = false;
@@ -134,7 +105,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private RelativeLayout test_nir_rl;
     private RelativeLayout test_rgb_ir_rl;
     private TextView hintAdainTv;
-    private TextView livenessBaiduTv;
     private View view;
     private RelativeLayout layoutCompareStatus;
     private TextView textCompareStatus;
@@ -145,6 +115,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private TextView tv_all_time;
     private RelativeLayout hintShowRl;
     private RelativeLayout developmentAddRl;
+
     private float rgbLiveScore;
     private float nirLiveScore;
     // 判断是否有人脸
@@ -152,21 +123,16 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private ImageView livenessTipsFailIv;
     private float nirLivenessScore = 0.0f;
     private float rgbLivenessScore = 0.0f;
-    // 特征比对
-    private long endCompareTime;
-    // 特征提取
-    private long featureTime;
-
 
     private TextView mTvIDCardNo;
     private TextView mTvUserName;
     private ReaderPresenter mReaderPresenter;
     private boolean isReqUSBPermission = false;
-    private Bitmap mIdCardPhoto;
+    private Bitmap mUserCloudPhoto;
     private int mDeviceType = DeviceParamBean.DEV_TYPE_INNER_OR_HID;
     private Handler mHandler;
     private long mLastOpenTime = 0;
-    private long mUserScanTime = 0;
+    private long mScanTime = 0;
     private User mUser;
     private String lastUserIdNo;
     private static final int USER_SCAN_INTERVAL = 3 * 1000;
@@ -177,7 +143,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private Thread vbarThread;
     //    private String eid;
     private String pclass;
-    private long mQRTime;
 
     private float[] mPointXY = new float[4];
     private byte[] mFeatures = new byte[512];
@@ -196,8 +161,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mHandler = new Handler();
 
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-
-
         if (mUsbManager != null) {
             for (UsbDevice device : mUsbManager.getDeviceList().values()) {
                 Log.e("USB ==== ", "vid: " + device.getVendorId() + " pid:" + device.getProductId());
@@ -255,7 +218,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         break;
                     case UsbManager.ACTION_USB_DEVICE_DETACHED: // 拔出USB设备
                         Toast.makeText(context, "VBAR DETACHED", Toast.LENGTH_SHORT).show();
-
                         break;
                     default:
                         break;
@@ -276,7 +238,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mContext.unregisterReceiver(mUsbReceiver);
     }
 
-
     private void initView() {
         // 获取整个布局
         livenessRl = findViewById(R.id.liveness_Rl);
@@ -295,22 +256,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         mDrawDetectFaceView = findViewById(R.id.texture_view_draw);
         mDrawDetectFaceView.setKeepScreenOn(true);
         mDrawDetectFaceView.setOpaque(false);
-        // 百度
-        livenessBaiduTv = findViewById(R.id.liveness_baiduTv);
 
         view = findViewById(R.id.mongolia_view);
         // RGB 阈值
         rgbLiveScore = SingleBaseConfig.getBaseConfig().getRgbLiveScore();
         // Live 阈值
         nirLiveScore = SingleBaseConfig.getBaseConfig().getNirLiveScore();
-        /* title */
-        // 返回
-//        ImageView testimony_backIv = findViewById(R.id.btn_back);
-//        testimony_backIv.setOnClickListener(this);
-        // 预览模式
-//        testimonyPreviewTv = findViewById(R.id.preview_text);
-//        testimonyPreviewTv.setOnClickListener(this);
-//        testimonyPreviewLineIv = findViewById(R.id.preview_view);
         // 设置
         ImageView testimonySettingIv = findViewById(R.id.btn_setting);
         testimonySettingIv.setOnClickListener(this);
@@ -361,16 +312,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         livenessTipsFailTv = findViewById(R.id.liveness_tips_failTv);
         livenessTipsPleaseFailTv = findViewById(R.id.liveness_tips_please_failTv);
         livenessTipsFailIv = findViewById(R.id.liveness_tips_failIv);
-        // 预览模式buttom
-//        livenessButtomLl = findViewById(R.id.liveness_buttomLl);
-//        kaifaRelativeLayout = findViewById(R.id.kaifa_relativeLayout);
-//        livenessAddIv = findViewById(R.id.liveness_addIv);
-//        livenessAddIv.setOnClickListener(this);
-//        livenessUpdateTv = findViewById(R.id.liveness_updateTv);
-        livenessAgainRl = findViewById(R.id.liveness_againRl);
-        livenessShowIv = findViewById(R.id.liveness_showIv);
-//        TextView livenessAgainTv = findViewById(R.id.liveness_againTv);
-//        livenessAgainTv.setOnClickListener(this);
+        idCardPhotoIv = findViewById(R.id.liveness_showIv);
+        livePhotoIv = findViewById(R.id.iv_live_photo);
+
         // 双摄像头
         mCameraNum = Camera.getNumberOfCameras();
         if (mCameraNum < 2) {
@@ -392,27 +336,25 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 super.run();
                 while (true) {
                     final String audienceCode = vbar.getResultsingle();
-                    if (audienceCode != null && System.currentTimeMillis() - mQRTime > USER_SCAN_INTERVAL) {
-                        mQRTime = System.currentTimeMillis();
+                    if (audienceCode != null && System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+
                         checkable = true;
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 Log.e(TAG, audienceCode);
                                 isQrFaceDetect = false;
 
-                                requestUserByAudienceCode(new OnResultListener<List<User>>() {
+                                HttpRequester.requestUserByAudienceCode(new OnResultListener<List<User>>() {
                                     @Override
                                     public void onResult(List<User> result) {
-                                        pclass = "扫二维码";
+                                        pclass = "人证核验";
                                         if (result != null && result.size() > 0) {
-
                                             if (mUser != null) {
                                                 lastUserIdNo = mUser.getIdCardNo();
                                             }
-
                                             // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                                            if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                                                mUserScanTime = System.currentTimeMillis();
+                                            if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+                                                mScanTime = 0;
                                             }
                                             mUser = result.get(0);
                                             runOnUiThread(new Runnable() {
@@ -424,16 +366,15 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                             });
 
                                             if (!TextUtils.isEmpty(mUser.getImage())) {
-                                                mIdCardPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
+                                                mUserCloudPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
                                                 runOnUiThread(new Runnable() {
                                                     @Override
                                                     public void run() {
-                                                        livenessShowIv.setImageBitmap(mIdCardPhoto);
+                                                        idCardPhotoIv.setImageBitmap(mUserCloudPhoto);
                                                     }
                                                 });
-                                                FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
+                                                FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
                                             } else {
-//                                                startActivityForResult(new Intent(IDReaderActivity.this, FaceNIRDetectActivity.class), 100);
                                                 isQrFaceDetect = true;
                                             }
                                         } else {
@@ -460,65 +401,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         vbarThread.start();
     }
 
-    private void requestUserByAudienceCode(final OnResultListener<List<User>> listener, String audienceCode) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "getUsers")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            RequestBody body = new FormBody.Builder().add("audience_code", audienceCode).build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        List<User> userList = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<List<User>>() {
-                        }.getType());
-
-                        listener.onResult(userList);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
-//            Log.e(TAG, "===================" + s);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     protected void onResume() {
@@ -557,10 +439,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     }
 
     private void startCameraPreview() {
-        // 设置前置摄像头
-        // CameraPreviewManager.getInstance().setCameraFacing(CameraPreviewManager.CAMERA_FACING_FRONT);
-        // 设置后置摄像头
-        //  CameraPreviewManager.getInstance().setCameraFacing(CameraPreviewManager.CAMERA_FACING_BACK);
         // 设置USB摄像头
         CameraPreviewManager.getInstance().setCameraFacing(CameraPreviewManager.CAMERA_USB);
 
@@ -634,6 +512,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
+
     private void dealIr(byte[] data) {
         irData = data;
         if (isQrFaceDetect) {
@@ -645,9 +524,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
 
     private synchronized void checkData() {
+
         if (rgbData != null && irData != null) {
-            if (livenessShowIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
-                firstFeatureFinished = false;
+            if (idCardPhotoIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
                 FaceSDKManager.getInstance().onDetectCheck(rgbData, irData, null,
                         PREFER_HEIGHT, PREFER_WIDTH, 3, new FaceDetectCallBack() {
                             @Override
@@ -657,7 +536,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                             @Override
                             public void onTip(int code, String msg) {
-
                             }
 
                             @Override
@@ -668,14 +546,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                 rgbData = null;
                 irData = null;
-            } else {
-//                test_nir_iv.setVisibility(View.VISIBLE);
-//                test_rgb_iv.setVisibility(View.VISIBLE);
-//                testImageview.setImageResource(R.mipmap.ic_image_video);
-//                ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 0.85f, 0.0f);
-//                animator.setDuration(3000);
-//                view.setBackgroundColor(Color.parseColor("#ffffff"));
-//                animator.start();
             }
         }
     }
@@ -694,57 +564,57 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                             BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO, new FaceFeatureCallBack() {
 
                                 @Override
-                                public void onFaceFeatureCallBack(float featureSize,
-                                                                  byte[] feature, long time) {
-                                    featureTime = time;
+                                public void onFaceFeatureCallBack(float featureSize, byte[] feature, long time) {
                                     firstFeature = feature;
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            long startCompareTime = System.currentTimeMillis();
-
                                             score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                                                     BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO,
                                                     firstFeature, secondFeature, true);
-                                            endCompareTime = System.currentTimeMillis() - startCompareTime;
-                                            if (!isDevelopment) {
-                                                layoutCompareStatus.setVisibility(View.GONE);
-                                                livenessTipsFailRl.setVisibility(View.VISIBLE);
-                                                if (isFace) {
-                                                    livenessTipsFailTv.setText("上传图片不包含人脸");
-                                                    livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
-                                                    livenessTipsPleaseFailTv.setText("无法进行人证比对");
-                                                    livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
-                                                } else {
-                                                    rgbLivenessScore = livenessModel.getRgbLivenessScore();
-                                                    nirLivenessScore = livenessModel.getIrLivenessScore();
-                                                    if (rgbLivenessScore > rgbLiveScore && nirLivenessScore >
-                                                            nirLiveScore) {
-                                                        if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
+
+                                            layoutCompareStatus.setVisibility(View.GONE);
+                                            livenessTipsFailRl.setVisibility(View.VISIBLE);
+                                            if (isFace) {
+                                                livenessTipsFailTv.setText("上传图片不包含人脸");
+                                                livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+                                                livenessTipsPleaseFailTv.setText("无法进行人证比对");
+                                                livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+                                            } else {
+                                                rgbLivenessScore = livenessModel.getRgbLivenessScore();
+                                                nirLivenessScore = livenessModel.getIrLivenessScore();
+                                                if (rgbLivenessScore > rgbLiveScore && nirLivenessScore >
+                                                        nirLiveScore) {
+                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
+                                                        BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
+
+                                                        if (image != null) {
+                                                            Bitmap livePhoto = BitmapUtils.scale(BitmapUtils.getInstaceBmp(image), 0.3F);
+                                                            if (livePhotoIv.getDrawable() == null) {
+                                                                livePhotoIv.setImageBitmap(livePhoto);
+                                                            }
                                                             livenessTipsFailTv.setText("人证核验通过");
                                                             livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
                                                             livenessTipsPleaseFailTv.setText("识别成功");
                                                             livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
-
                                                             if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
-                                                                openDoor(mUser.getItemEId(), pclass); // TODO
+                                                                openDoor(mUser.getItemEId(), pclass, livePhoto);
                                                             }
-
-                                                        } else {
-                                                            livenessTipsFailTv.setText("人证核验未通过");
-                                                            livenessTipsFailTv.setTextColor(
-                                                                    Color.parseColor("#FFFEC133"));
-                                                            livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
-                                                            livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+                                                            image.destory();
                                                         }
+
                                                     } else {
                                                         livenessTipsFailTv.setText("人证核验未通过");
                                                         livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
                                                         livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
                                                         livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
                                                     }
+                                                } else {
+                                                    livenessTipsFailTv.setText("人证核验未通过");
+                                                    livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+                                                    livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
+                                                    livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
                                                 }
-
                                             }
 
                                             mHandler.postDelayed(new Runnable() {
@@ -752,8 +622,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                 public void run() {
                                                     mTvIDCardNo.setText("");
                                                     mTvUserName.setText("");
-                                                    livenessShowIv.setImageBitmap(null);
-                                                    checkable = false;
+                                                    idCardPhotoIv.setImageBitmap(null);
+                                                    livePhotoIv.setImageDrawable(null);
                                                 }
                                             }, 5 * 1000);
                                         }
@@ -765,11 +635,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         });
     }
 
-    private void openDoor(final String eid, final String pclass) {
+    private void openDoor(final String eid, final String pclass, final Bitmap livePhoto) {
         try {
             final FileOutputStream fos1 = new FileOutputStream("/sys/exgpio/relay1");
             fos1.write("1".getBytes());
             Log.e(TAG, "OPEN");
+            checkable = false;
 
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -780,21 +651,21 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         fos1.close();
                         mLastOpenTime = System.currentTimeMillis();
 
-                        long deltaTime = System.currentTimeMillis() - mUserScanTime;
+                        long deltaTime = System.currentTimeMillis() - mScanTime;
                         Log.e(TAG, "Delta: " + deltaTime);
                         if (deltaTime >= USER_SCAN_INTERVAL) {
-                            mUserScanTime = System.currentTimeMillis();
-                            uploadPassRecord(new OnResultListener<String>() {
+                            mScanTime = System.currentTimeMillis();
+                            HttpRequester.uploadPassRecord(new OnResultListener<String>() {
                                 @Override
                                 public void onResult(String result) {
-                                    Log.e(TAG, result);
+                                    Log.e(TAG, "通行成功");
                                 }
 
                                 @Override
                                 public void onError(FaceError error) {
                                     Log.e(TAG, error.toString());
                                 }
-                            }, eid, pclass);
+                            }, eid, pclass, mUser, livePhoto);
                         }
 
                     } catch (IOException e) {
@@ -802,76 +673,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                     }
                 }
             }, 1000);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void uploadPassRecord(final OnResultListener<String> listener, String eid, String pclass) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "passRecord")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date today = Calendar.getInstance().getTime();
-            String todayAsString = df.format(today);
-
-            RequestBody body = new FormBody.Builder()
-                    .add("pimg", BitmapUtils.bitmapToBase64(mIdCardPhoto, 60))
-                    .add("user_id", mUser.getUserId())
-                    .add("user_name", mUser.getUserName())
-                    .add("pclass", pclass)
-                    .add("eid", eid)
-                    .add("ptime", todayAsString)
-                    .build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        String result = gson.fromJson(jsonObject.getString("code"), new TypeToken<String>() {
-                        }.getType());
-
-                        listener.onResult(result);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -895,13 +696,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
                     @Override
                     public void onTip(int code, final String msg) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                mFaceRoundProView.setTipText("保持面部在取景框内");
-//                                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
-                            }
-                        });
                     }
 
                     @Override
@@ -919,8 +713,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             public void run() {
 
                 if (livenessModel == null || livenessModel.getFaceInfo() == null) {
-//                    mFaceRoundProView.setTipText("保持面部在取景框内");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     return;
                 }
 
@@ -929,8 +721,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 mPointXY[2] = livenessModel.getFaceInfo().width;     // 人脸宽度
                 mPointXY[3] = livenessModel.getFaceInfo().height;    // 人脸高度
 
-                FaceOnDrawTexturViewUtil.converttPointXY(mPointXY, mPreviewView,
-                        livenessModel.getBdFaceImageInstance(), livenessModel.getFaceInfo().width);
+                FaceOnDrawTexturViewUtil.converttPointXY(mPointXY, mPreviewView, livenessModel.getBdFaceImageInstance(), livenessModel.getFaceInfo().width);
 
 
                 float leftLimitX = 0;
@@ -949,8 +740,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 }
 
                 if (mPointXY[2] > previewWidth || mPointXY[3] > previewWidth) {
-//                    mFaceRoundProView.setTipText("请向后远离镜头");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     // 释放内存
                     Log.e("mPointXY", "请向后远离镜头");
                     destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
@@ -961,16 +750,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         || mPointXY[0] + mPointXY[2] / 2 > rightLimitX
                         || mPointXY[1] - mPointXY[3] / 2 < topLimitY
                         || mPointXY[1] + mPointXY[3] / 2 > bottomLimitY) {
-//                    mFaceRoundProView.setTipText("保持面部在取景框内");
                     Log.e("mPointXY", "保持面部在取景框内");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     // 释放内存
                     destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
                     return;
                 }
 
-//                mFaceRoundProView.setTipText("请保持面部在取景框内");
-//                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_blue);
                 // 检验活体分值
                 checkLiveScore(livenessModel);
             }
@@ -984,7 +769,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
      */
     private void checkLiveScore(LivenessModel livenessModel) {
         if (livenessModel == null || livenessModel.getFaceInfo() == null) {
-//            mFaceRoundProView.setTipText("保持面部在取景框内");
             return;
         }
 
@@ -994,8 +778,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         float liveIrThreadHold = SingleBaseConfig.getBaseConfig().getNirLiveScore();
         Log.e(TAG, "score = " + rgbLivenessScore + ", ns = " + irLivenessScore);
         if (rgbLivenessScore < liveThreadHold || irLivenessScore < liveIrThreadHold) {
-//            mFaceRoundProView.setTipText("活体检测未通过");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
             // 释放内存
             destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
             return;
@@ -1021,8 +803,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
     private void displayCompareResult(float ret, byte[] faceFeature, LivenessModel model) {
         if (model == null) {
-//            mFaceRoundProView.setTipText("保持面部在取景框内");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
             return;
         }
 
@@ -1031,8 +811,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         if (ret == 128) {
             BDFaceImageInstance bdFaceImageInstance = model.getBdFaceImageInstance();
             if (bdFaceImageInstance == null) {
-//                mFaceRoundProView.setTipText("抠图失败");
-//                mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                 return;
             }
 
@@ -1041,9 +819,9 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             // 获取头像
             if (mDetectedBitmap != null) {
                 mCollectSuccess = true;
-                livenessShowIv.setImageBitmap(mDetectedBitmap);
+                idCardPhotoIv.setImageBitmap(mDetectedBitmap);
 
-                uploadIDPhoto(new OnResultListener<String>() {
+                HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
                     @Override
                     public void onResult(String result) {
                         Log.e(TAG, result);
@@ -1060,20 +838,14 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         toast(error.getErrorMessage());
                         Log.e(TAG, error.getErrorMessage());
                     }
-                }, mDetectedBitmap);
+                }, mDetectedBitmap, mUser);
             }
             bdFaceImageInstance.destory();
 
-//            mRelativeCollectSuccess.setVisibility(View.VISIBLE);
-//            mRelativePreview.setVisibility(View.GONE);
-//            mFaceRoundProView.setTipText("");
             for (int i = 0; i < faceFeature.length; i++) {
                 mFeatures[i] = faceFeature[i];
             }
 
-        } else {
-//            mFaceRoundProView.setTipText("特征提取失败");
-//            mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
         }
     }
 
@@ -1083,7 +855,6 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
         }
     }
 
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -1091,93 +862,8 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 startActivity(new Intent(mContext, SettingMainActivity.class));
                 finish();
                 break;
-            // 预览模式
-            case R.id.preview_text:
-                isDevelopment = false;
-                if (livenessShowIv.getDrawable() != null || hintShowIv.getDrawable() != null) {
-                    livenessTipsFailRl.setVisibility(View.VISIBLE);
-                    layoutCompareStatus.setVisibility(View.GONE);
-                } else {
-                    livenessTipsFailRl.setVisibility(View.GONE);
-                    layoutCompareStatus.setVisibility(View.GONE);
-                }
-//                testimonyPreviewLineIv.setVisibility(View.VISIBLE);
-//                testimonyDevelopmentLineIv.setVisibility(View.GONE);
-//                testimonyDevelopmentTv.setTextColor(Color.parseColor("#FF999999"));
-//                testimonyPreviewTv.setTextColor(getResources().getColor(R.color.white));
-                test_nir_rl.setVisibility(View.GONE);
-                test_rgb_ir_rl.setVisibility(View.GONE);
-//                livenessButtomLl.setVisibility(View.VISIBLE);
-                kaifaRelativeLayout.setVisibility(View.GONE);
-                livenessBaiduTv.setVisibility(View.VISIBLE);
-//                test_nir_view.setVisibility(View.GONE);
-                irTexture.setAlpha(0);
-                testImageview.setVisibility(View.GONE);
-                break;
         }
     }
-
-
-    private void requestUserById(final OnResultListener<List<User>> listener, String idCardNo) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "getUsers")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            RequestBody body = new FormBody.Builder().add("idCardNo", idCardNo).build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        List<User> userList = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<List<User>>() {
-                        }.getType());
-
-                        listener.onResult(userList);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
-//            Log.e(TAG, "===================" + s);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     private void toast(final String tip) {
         runOnUiThread(new Runnable() {
@@ -1258,28 +944,20 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                 paintBg.setAntiAlias(true);
                 if (faceInfo.width > faceInfo.height) {
                     if (!SingleBaseConfig.getBaseConfig().getRgbRevert()) {
-                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(),
-                                rectF.centerY(), rectF.width() / 2 - 8, paintBg);
-                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(),
-                                rectF.centerY(), rectF.width() / 2, paint);
+                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(), rectF.centerY(), rectF.width() / 2 - 8, paintBg);
+                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(), rectF.centerY(), rectF.width() / 2, paint);
                     } else {
-                        canvas.drawCircle(rectF.centerX(), rectF.centerY(),
-                                rectF.width() / 2 - 8, paintBg);
-                        canvas.drawCircle(rectF.centerX(), rectF.centerY(),
-                                rectF.width() / 2, paint);
+                        canvas.drawCircle(rectF.centerX(), rectF.centerY(), rectF.width() / 2 - 8, paintBg);
+                        canvas.drawCircle(rectF.centerX(), rectF.centerY(), rectF.width() / 2, paint);
                     }
 
                 } else {
                     if (!SingleBaseConfig.getBaseConfig().getRgbRevert()) {
-                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(),
-                                rectF.centerY(), rectF.height() / 2 - 8, paintBg);
-                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(),
-                                rectF.centerY(), rectF.height() / 2, paint);
+                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(), rectF.centerY(), rectF.height() / 2 - 8, paintBg);
+                        canvas.drawCircle(mPreviewView.getWidth() - rectF.centerX(), rectF.centerY(), rectF.height() / 2, paint);
                     } else {
-                        canvas.drawCircle(rectF.centerX(), rectF.centerY(),
-                                rectF.height() / 2 - 8, paintBg);
-                        canvas.drawCircle(rectF.centerX(), rectF.centerY(),
-                                rectF.height() / 2, paint);
+                        canvas.drawCircle(rectF.centerX(), rectF.centerY(), rectF.height() / 2 - 8, paintBg);
+                        canvas.drawCircle(rectF.centerX(), rectF.centerY(), rectF.height() / 2, paint);
                     }
                 }
                 // 清空canvas
@@ -1297,12 +975,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     @Override
     public void onReadIDCardSuccess(final Info.IDCardInfo iDCardInfo) {
         isQrFaceDetect = false;
-        pclass = "刷身份证";
+        pclass = "身份证比对";
 
         if (iDCardInfo != null) {
-            updateIDCardInfo(iDCardInfo, true);
+            flushIDCardInfo(iDCardInfo, true);
 
-            requestUserById(new OnResultListener<List<User>>() {
+            HttpRequester.requestUserById(new OnResultListener<List<User>>() {
                 @Override
                 public void onResult(List<User> result) {
                     checkable = true;
@@ -1313,23 +991,24 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         }
 
                         // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mUserScanTime > USER_SCAN_INTERVAL) {
-                            mUserScanTime = System.currentTimeMillis();
+                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+                            mScanTime = 0;
                         }
                         mUser = result.get(0);
 
                         if (iDCardInfo.photo != null) {
-                            mIdCardPhoto = iDCardInfo.photo;
-                            FaceSDKManager.getInstance().personDetect(mIdCardPhoto, secondFeature);
+                            mUserCloudPhoto = iDCardInfo.photo;
+                            FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
 
                             if (TextUtils.isEmpty(mUser.getImage())) {
-                                uploadIDPhoto(new OnResultListener<String>() {
+                                HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
                                     @Override
                                     public void onResult(String result) {
                                         if (result.equals("0")) {
-                                            // 如果更新成功，则人脸识别 TODO
+                                            // 如果更新成功，则人脸识别
                                             Log.e(TAG, result);
                                             toast("上传证件照成功");
+
                                         } else {
                                             toast("上传证件照失败，errCode: " + result);
                                         }
@@ -1340,7 +1019,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                         Log.e(TAG, error.getErrorMessage());
                                         toast(error.getErrorMessage());
                                     }
-                                }, iDCardInfo.photo);
+                                }, iDCardInfo.photo, mUser);
                             }
                         } else {
                             toast("身份证照片读取失败");
@@ -1359,83 +1038,11 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
 
     }
 
-    private void uploadIDPhoto(final OnResultListener<String> listener, Bitmap photo) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
 
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "userEdit")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            String img = BitmapUtils.bitmapToBase64(photo, 60);
-            Log.e(TAG, "image ======== " + img);
-
-            RequestBody body = new FormBody.Builder()
-                    .add("image", img)
-                    .add("group_id", mUser.getGroupId())
-                    .add("user_id", mUser.getUserId())
-                    .add("user_info", mUser.getUserInfo())
-                    .add("user_name", mUser.getUserName())
-                    .add("item_eid", mUser.getItemEId())
-                    .add("idCardNo", mUser.getIdCardNo())
-                    .add("audience_code", mUser.getAudienceCode())
-                    .build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-//                        BaseHttpResult result = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<BaseHttpResult>() {
-//                        }.getType());
-                        Log.e(TAG, "errMsg ===" + jsonObject.getString("msg"));
-                        String result = gson.fromJson(jsonObject.getString("code"), new TypeToken<String>() {
-                        }.getType());
-                        listener.onResult(result);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateIDCardInfo(final Info.IDCardInfo idCardInfo, boolean display) {
+    private void flushIDCardInfo(final Info.IDCardInfo idCardInfo, boolean display) {
         if (display) {
             if (idCardInfo.cardType == Info.ID_CARD_TYPE_CHINA) {// 身份证
-                livenessShowIv.setImageBitmap(idCardInfo.photo);
+                idCardPhotoIv.setImageBitmap(idCardInfo.photo);
                 mTvIDCardNo.setText(idCardInfo.id);
                 mTvUserName.setText(idCardInfo.name);
             } else if (idCardInfo.cardType == Info.ID_CARD_TYPE_FOREIGN) {// 外国人证

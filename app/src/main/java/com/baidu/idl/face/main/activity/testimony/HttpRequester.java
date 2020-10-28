@@ -229,7 +229,7 @@ public class HttpRequester {
         }
     }
 
-    public static void uploadPassRecord(final OnResultListener<String> listener, String eid, String pclass, User user, Bitmap idCardPhoto) {
+    public static void uploadPassRecord(final OnResultListener<String> listener, String eid, String pclass, User user, Bitmap livePhoto) {
         try {
             OkHttpClient okHttpClient = new OkHttpClient();
 
@@ -246,12 +246,12 @@ public class HttpRequester {
             String todayAsString = df.format(today);
 
             RequestBody body = new FormBody.Builder()
-                    .add("pimg", BitmapUtils.bitmapToBase64(idCardPhoto, 60))
-                    .add("user_id", user.getUserId())
-                    .add("user_name", user.getUserName())
-                    .add("pclass", pclass)
-                    .add("eid", eid)
-                    .add("ptime", todayAsString)
+                    .add("pimg", BitmapUtils.bitmapToBase64(livePhoto, 30))
+                    .add("user_id", user.getUserId() == null ? "" : user.getUserId())
+                    .add("user_name", user.getUserName() == null ? "" : user.getUserName())
+                    .add("pclass", pclass == null ? "" : pclass)
+                    .add("eid", eid == null ? "" : eid)
+                    .add("ptime", todayAsString == null ? "" : todayAsString)
                     .build();
 
             final Request request = new Request.Builder()
