@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -33,7 +32,6 @@ import com.baidu.idl.face.main.R;
 import com.baidu.idl.face.main.activity.BaseActivity;
 import com.baidu.idl.face.main.activity.scangun.ScanGun;
 import com.baidu.idl.face.main.activity.setting.SettingMainActivity;
-import com.baidu.idl.face.main.activity.vbar.Vbar;
 import com.baidu.idl.face.main.callback.CameraDataCallback;
 import com.baidu.idl.face.main.callback.FaceDetectCallBack;
 import com.baidu.idl.face.main.callback.FaceFeatureCallBack;
@@ -98,7 +96,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
     private ImageView livePhotoIv; //现场照片
 
     private ImageView hintShowIv;
-    private TextView tv_nir_live_score;
     private RelativeLayout livenessTipsFailRl;
     private TextView livenessTipsFailTv;
     private TextView livenessTipsPleaseFailTv;
@@ -130,7 +127,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
     private static final int USER_SCAN_INTERVAL = 3 * 1000;
     private boolean checkable = false;
 
-    private Vbar vbar;
     private boolean state;
     //    private String eid;
     private String pclass;
@@ -282,7 +278,9 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                         mUser = result.get(0);
 
                                         if (idCardInfo.getPhoto() != null) {
-                                            mUserCloudPhoto = BitmapFactory.decodeByteArray(idCardInfo.getPhoto(), 0, idCardInfo.getPhoto().length);
+                                            byte[] buf = new byte[WLTService.imgLength];
+                                            WLTService.wlt2Bmp(idCardInfo.getPhoto(), buf);
+                                            mUserCloudPhoto = BitmapUtils.BGR2Bitmap(buf);
                                             FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
 
                                             if (TextUtils.isEmpty(mUser.getImage())) {
@@ -407,8 +405,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
         test_rgb_ir_rl.setVisibility(View.GONE);
         // 提示
         layoutCompareStatus = findViewById(R.id.layout_compare_status);
-        // 活体检测耗时
-        tv_nir_live_score = findViewById(R.id.tv_nir_live_score);
 
         // ****************预览模式****************
         // 未通过提示
@@ -428,81 +424,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
             mCamera = new Camera[mCameraNum];
             mPreview[1] = new PreviewTexture(this, irTexture);
         }
-    }
-
-
-    private void initVBar() {
-        vbar = new Vbar();
-        state = vbar.vbarOpen();
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                while (true) {
-                    final String audienceCode = vbar.getResultsingle();
-                    if (audienceCode != null && System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
-                        checkable = true;
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                Log.e(TAG, audienceCode);
-                                isQrFaceDetect = false;
-
-                                HttpRequester.requestUserByAudienceCode(new OnResultListener<List<User>>() {
-                                    @Override
-                                    public void onResult(List<User> result) {
-                                        pclass = "人证核验";
-                                        if (result != null && result.size() > 0) {
-
-                                            if (mUser != null) {
-                                                lastUserIdNo = mUser.getIdCardNo();
-                                            }
-
-                                            // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                                            if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
-                                                mScanTime = System.currentTimeMillis();
-                                            }
-                                            mUser = result.get(0);
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    mTvIDCardNo.setText(mUser.getIdCardNo());
-                                                    mTvUserName.setText(mUser.getUserName());
-                                                }
-                                            });
-
-                                            if (!TextUtils.isEmpty(mUser.getImage())) {
-                                                mUserCloudPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
-                                                runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        idCardPhotoIv.setImageBitmap(mUserCloudPhoto);
-                                                    }
-                                                });
-                                                FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
-                                            } else {
-                                                isQrFaceDetect = true;
-                                            }
-                                        } else {
-                                            toast("该用户不存在");
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(FaceError error) {
-                                        Log.e(TAG, "ERROR! " + error.toString());
-                                    }
-                                }, audienceCode);
-                            }
-                        });
-                    }
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
     }
 
 
@@ -587,16 +508,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
         super.onPause();
     }
 
-//    private void uninit() {
-//        //退出前要安全释放资源
-//        if (mReaderPresenter != null) {
-//            mReaderPresenter.stopReadcard();
-//            mReaderPresenter.release();
-//            mReaderPresenter = null;
-//        }
-////        uninitBT();
-//    }
-
     private void dealRgb(byte[] data) {
         rgbData = data;
         if (isQrFaceDetect) {
@@ -614,7 +525,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
             checkData();
         }
     }
-
 
     private synchronized void checkData() {
         if (rgbData != null && irData != null) {
@@ -832,8 +742,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                 }
 
                 if (mPointXY[2] > previewWidth || mPointXY[3] > previewWidth) {
-//                    mFaceRoundProView.setTipText("请向后远离镜头");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     // 释放内存
                     Log.e("mPointXY", "请向后远离镜头");
                     destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
@@ -844,9 +752,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                         || mPointXY[0] + mPointXY[2] / 2 > rightLimitX
                         || mPointXY[1] - mPointXY[3] / 2 < topLimitY
                         || mPointXY[1] + mPointXY[3] / 2 > bottomLimitY) {
-//                    mFaceRoundProView.setTipText("保持面部在取景框内");
                     Log.e("mPointXY", "保持面部在取景框内");
-//                    mFaceRoundProView.setBitmapSource(R.mipmap.ic_loading_red);
                     // 释放内存
                     destroyImageInstance(livenessModel.getBdFaceImageInstanceCrop());
                     return;
@@ -865,7 +771,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
      */
     private void checkLiveScore(LivenessModel livenessModel) {
         if (livenessModel == null || livenessModel.getFaceInfo() == null) {
-//            mFaceRoundProView.setTipText("保持面部在取景框内");
             return;
         }
 
@@ -952,7 +857,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
         }
     }
 
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -963,7 +867,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
 
         }
     }
-
 
     private void toast(final String tip) {
         runOnUiThread(new Runnable() {
@@ -992,8 +895,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Log.e("hahaha", " ========= " + checkable);
-
                 Canvas canvas = mDrawDetectFaceView.lockCanvas();
                 if (canvas == null) {
                     mDrawDetectFaceView.unlockCanvasAndPost(canvas);
@@ -1119,28 +1020,79 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
     }
 
     @Override
-    public void onScanFinish(String audienceCode) {
+    public void onScanFinish(final String audienceCode) {
         Log.e("OnScanFinish", audienceCode);
+
+        if (audienceCode != null && System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+            checkable = true;
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    Log.e(TAG, audienceCode);
+                    isQrFaceDetect = false;
+
+                    HttpRequester.requestUserByAudienceCode(new OnResultListener<List<User>>() {
+                        @Override
+                        public void onResult(List<User> result) {
+                            pclass = "人证核验";
+                            if (result != null && result.size() > 0) {
+
+                                if (mUser != null) {
+                                    lastUserIdNo = mUser.getIdCardNo();
+                                }
+
+                                // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
+                                if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+                                    mScanTime = System.currentTimeMillis();
+                                }
+                                mUser = result.get(0);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mTvIDCardNo.setText(mUser.getIdCardNo());
+                                        mTvUserName.setText(mUser.getUserName());
+                                    }
+                                });
+
+                                if (!TextUtils.isEmpty(mUser.getImage())) {
+                                    mUserCloudPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            idCardPhotoIv.setImageBitmap(mUserCloudPhoto);
+                                        }
+                                    });
+                                    FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
+                                } else {
+                                    isQrFaceDetect = true;
+                                }
+                            } else {
+                                toast("该用户不存在");
+                            }
+                        }
+
+                        @Override
+                        public void onError(FaceError error) {
+                            Log.e(TAG, "ERROR! " + error.toString());
+                        }
+                    }, audienceCode);
+                }
+            });
+        }
     }
 
 
+    private long currentTime = 0;
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!isQrFaceDetect)
-            return super.onKeyDown(keyCode, event);
-
         mScanGun.isScanning(keyCode, event);
         return super.onKeyDown(keyCode, event);
     }
 
+
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // 拦截物理键盘事件
-        //  Log.d("jason","dispatchKeyEvent KeyCode :  " + event.getKeyCode() );
-
-        if (!isQrFaceDetect)
-            return super.dispatchKeyEvent(event);
-
         if (event.getKeyCode() > 6) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {//将键盘的删除键传递下去

@@ -1,9 +1,6 @@
 package com.baidu.idl.face.main.activity.scangun;
 
-
-import android.util.Log;
 import android.view.KeyEvent;
-
 
 /**
  * ScanGun Utils
@@ -18,7 +15,7 @@ public class ScanGun {
     private long currentTime = 0;
     private boolean isKeySHIFT = false;
     private StringBuilder stringBuilder = new StringBuilder();
-    private ScanGunCallBack callBack = null;
+    private ScanGunCallBack callBack;
 
     private static int maxKeysInterval = MAX_KEYS_INTERVAL_DEFAULT;
 
@@ -37,28 +34,21 @@ public class ScanGun {
 
     public boolean isScanning(int keyCode, KeyEvent event) {
 
-        Log.d("jason", "  keyCode : " + String.format("%02x", keyCode) + "   Time :" + (System.currentTimeMillis() - currentTime));
         if (event.getFlags() != KeyEvent.FLAG_FROM_SYSTEM) {
-            //   Log.d("jason","event.getFlags()  failed");
             return false;
         }
         if (currentTime == 0) {
             if (stringBuilder.length() > 0) {
                 stringBuilder = stringBuilder.delete(0, stringBuilder.length());
             }
-            currentTime = System.currentTimeMillis();
-
-        } else {
-            if ((System.currentTimeMillis() - currentTime) > maxKeysInterval) {
-                if (stringBuilder.length() > 0) {
-                    stringBuilder = stringBuilder.delete(0,
-                            stringBuilder.length());
-                    currentTime = 0;
-                }
+        } else if (System.currentTimeMillis() - currentTime > maxKeysInterval) {
+            if (stringBuilder.length() > 0) {
+                stringBuilder = stringBuilder.delete(0, stringBuilder.length());
+                currentTime = 0;
             }
-            currentTime = System.currentTimeMillis();
-
         }
+
+        currentTime = System.currentTimeMillis();
 
         // Shift
         if (keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT || keyCode == KeyEvent.KEYCODE_SHIFT_LEFT) {
@@ -73,13 +63,10 @@ public class ScanGun {
         }
 
         // Enter
-
         if (keyCode == KeyEvent.KEYCODE_ENTER) {
-            //  Log.d("jason", "  keyCode == KeyEvent.KEYCODE_ENTER " );
             isKeySHIFT = false;
             currentTime = 0;
             if (callBack != null) {
-                //    Log.d("jason", "  callBack != null " );
                 callBack.onScanFinish(stringBuilder.toString());
             }
             return true;
@@ -151,22 +138,18 @@ public class ScanGun {
                     stringBuilder.append(ASCII.CHAR_SIGN_SPACE);
                     break;
                 }
-                default: {
-                    //  Log.d("jason", "  default  " );
+                default:
                     return false;
-                }
             }
-            if (callBack != null) {
-                //Log.d("jason", "  string:  "+ stringBuilder.toString() );
-                callBack.onScanFinish(stringBuilder.toString());
-            }
-            return true;
+//            if (callBack != null) {
+//                callBack.onScanFinish(stringBuilder.toString());
+//            }
+//            return true;
         }
 
-        if (callBack != null) {
-            //   Log.d("jason", "  string:  "+ stringBuilder.toString() );
-            callBack.onScanFinish(stringBuilder.toString());
-        }
+//        if (callBack != null) {
+//            callBack.onScanFinish(stringBuilder.toString());
+//        }
 
         return true;
 
@@ -254,7 +237,7 @@ public class ScanGun {
     }
 
     public interface ScanGunCallBack {
-        public void onScanFinish(String data);
+        void onScanFinish(String data);
     }
 
 
