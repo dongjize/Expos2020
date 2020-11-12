@@ -58,6 +58,7 @@ import com.routon.plsy.reader.sdk.common.Info;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class IDReaderActivity extends BaseActivity implements View.OnClickListener, IReaderView {
@@ -379,6 +380,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                             }
                                         } else {
                                             toast("该用户不存在");
+                                            Arrays.fill(secondFeature, (byte) 0);
                                         }
                                     }
 
@@ -622,8 +624,12 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                                                 public void run() {
                                                     mTvIDCardNo.setText("");
                                                     mTvUserName.setText("");
-                                                    idCardPhotoIv.setImageBitmap(null);
-                                                    livePhotoIv.setImageDrawable(null);
+                                                    if (idCardPhotoIv != null) {
+                                                        idCardPhotoIv.setImageBitmap(null);
+                                                    }
+                                                    if (livePhotoIv != null) {
+                                                        livePhotoIv.setImageDrawable(null);
+                                                    }
                                                 }
                                             }, 5 * 1000);
                                         }
@@ -641,6 +647,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
             fos1.write("1".getBytes());
             Log.e(TAG, "OPEN");
             checkable = false;
+            score = 0;
 
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -1026,6 +1033,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                         }
                     } else {
                         toast("该用户不存在");
+                        Arrays.fill(secondFeature, (byte) 0);
                     }
                 }
 

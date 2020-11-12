@@ -63,6 +63,7 @@ import com.zkteco.android.biometric.module.idcard.meta.IDPRPCardInfo;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +71,8 @@ import java.util.Map;
 public class IDReaderActivity2 extends BaseActivity implements View.OnClickListener, ScanGun.ScanGunCallBack {
     private static final String TAG = IDReaderActivity2.class.getSimpleName();
 
-    private byte[] firstFeature = new byte[512];
-    private byte[] secondFeature = new byte[512];
+    private byte[] firstFeature = new byte[512]; //现场采集feature
+    private byte[] secondFeature = new byte[512]; //身份证照片feature
 
     private Context mContext;
     private RelativeLayout livenessRl;
@@ -287,9 +288,9 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                                 HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
                                                     @Override
                                                     public void onResult(String result) {
+                                                        Log.e(TAG, result);
                                                         if (result.equals("0")) {
                                                             // 如果更新成功，则人脸识别
-                                                            Log.e(TAG, result);
                                                             toast("上传证件照成功");
                                                         } else {
                                                             toast("上传证件照失败，errCode: " + result);
@@ -308,6 +309,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                         }
                                     } else {
                                         toast("该用户不存在");
+                                        Arrays.fill(secondFeature, (byte) 0);
                                     }
                                 }
 
@@ -324,6 +326,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
             Log.e(TAG, e.toString());
         }
     }
+
 
     private void startIDCardReader() {
         if (null != idCardReader) {
@@ -470,14 +473,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-//        EventBus.getDefault().unregister(this);
-//        if (vbarThread != null) {
-//            vbarThread.interrupt();
-//        }
-//        if (vbar != null) {
-//            vbar.closeDev();
-//        }
-
         unregisterReceiver(); // TODO
 
         super.onDestroy();
@@ -575,6 +570,8 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                                     BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO,
                                                     firstFeature, secondFeature, true);
 
+                                            Log.e(TAG, "score = " + score);
+
                                             layoutCompareStatus.setVisibility(View.GONE);
                                             livenessTipsFailRl.setVisibility(View.VISIBLE);
                                             if (isFace) {
@@ -624,8 +621,12 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                                 public void run() {
                                                     mTvIDCardNo.setText("");
                                                     mTvUserName.setText("");
-                                                    idCardPhotoIv.setImageBitmap(null);
-                                                    livePhotoIv.setImageDrawable(null);
+                                                    if (idCardPhotoIv != null) {
+                                                        idCardPhotoIv.setImageBitmap(null);
+                                                    }
+                                                    if (livePhotoIv != null) {
+                                                        livePhotoIv.setImageDrawable(null);
+                                                    }
                                                 }
                                             }, 5 * 1000);
                                         }
@@ -644,6 +645,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
             fos1.write("1".getBytes());
             Log.e(TAG, "OPEN");
             checkable = false;
+            score = 0;
 
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -1067,6 +1069,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                 }
                             } else {
                                 toast("该用户不存在");
+                                Arrays.fill(secondFeature, (byte) 0);
                             }
                         }
 
@@ -1080,8 +1083,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
         }
     }
 
-
-    private long currentTime = 0;
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

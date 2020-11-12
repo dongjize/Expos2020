@@ -47,67 +47,7 @@ public class HttpRequester {
                     .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
                     .build();
 
-            RequestBody body = new FormBody.Builder().add("idCardNo", idCardNo).build();
-
-            final Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .build();
-            Call call = okHttpClient.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    e.printStackTrace();
-                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
-                    listener.onError(error);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
-                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
-                        listener.onError(error);
-
-                    }
-                    try {
-                        JSONObject jsonObject = new JSONObject(haha);
-
-                        Gson gson = new Gson();
-                        List<User> userList = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<List<User>>() {
-                        }.getType());
-
-                        listener.onResult(userList);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
-                        listener.onError(error);
-                    }
-                }
-            });
-//            Log.e(TAG, "===================" + s);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void requestUserByAudienceCode(final OnResultListener<List<User>> listener, String audienceCode) {
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-
-            long timestamp = System.currentTimeMillis() / 1000;
-
-            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
-                    .addQueryParameter("cmd", "getUsers")
-                    .addQueryParameter("timestamp", timestamp + "")
-                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
-                    .build();
-
-            RequestBody body = new FormBody.Builder().add("audience_code", audienceCode).build();
+            RequestBody body = new FormBody.Builder().add("idCardNo", idCardNo == null ? "" : idCardNo).build();
 
             final Request request = new Request.Builder()
                     .url(url)
@@ -148,7 +88,65 @@ public class HttpRequester {
                     }
                 }
             });
-//            Log.e(TAG, "===================" + s);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void requestUserByAudienceCode(final OnResultListener<List<User>> listener, String audienceCode) {
+        try {
+            OkHttpClient okHttpClient = new OkHttpClient();
+
+            long timestamp = System.currentTimeMillis() / 1000;
+
+            HttpUrl url = Objects.requireNonNull(HttpUrl.parse(Config.API_URL)).newBuilder()
+                    .addQueryParameter("cmd", "getUsers")
+                    .addQueryParameter("timestamp", timestamp + "")
+                    .addQueryParameter("token", Utils.md5(timestamp + Config.API_KEY))
+                    .build();
+
+            RequestBody body = new FormBody.Builder().add("audience_code", audienceCode == null ? "" : audienceCode).build();
+
+            final Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                    .build();
+            Call call = okHttpClient.newCall(request);
+
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                    FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "network request error", e);
+                    listener.onError(error);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String haha = response.body().string();
+                    if (response.body() == null || TextUtils.isEmpty(haha)) {
+                        FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
+                        listener.onError(error);
+
+                    }
+                    try {
+                        JSONObject jsonObject = new JSONObject(haha);
+
+                        Gson gson = new Gson();
+                        List<User> userList = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<List<User>>() {
+                        }.getType());
+
+                        listener.onResult(userList);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        FaceError error = new FaceError(FaceError.ErrorCode.NETWORK_REQUEST_ERROR, "response with error", e);
+                        listener.onError(error);
+                    }
+                }
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,17 +167,16 @@ public class HttpRequester {
                     .build();
 
             String img = BitmapUtils.bitmapToBase64(photo, 60);
-            Log.e(TAG, "image ======== " + img);
 
             RequestBody body = new FormBody.Builder()
                     .add("image", img)
-                    .add("group_id", user.getGroupId())
-                    .add("user_id", user.getUserId())
-                    .add("user_info", user.getUserInfo())
-                    .add("user_name", user.getUserName())
-                    .add("item_eid", user.getItemEId())
-                    .add("idCardNo", user.getIdCardNo())
-                    .add("audience_code", user.getAudienceCode())
+                    .add("group_id", user.getGroupId() == null ? "" : user.getGroupId())
+                    .add("user_id", user.getUserId() == null ? "" : user.getUserId())
+                    .add("user_info", user.getUserInfo() == null ? "" : user.getUserInfo())
+                    .add("user_name", user.getUserName() == null ? "" : user.getUserName())
+                    .add("item_eid", user.getItemEId() == null ? "" : user.getItemEId())
+                    .add("idCardNo", user.getIdCardNo() == null ? "" : user.getIdCardNo())
+                    .add("audience_code", user.getAudienceCode() == null ? "" : user.getAudienceCode())
                     .build();
 
             final Request request = new Request.Builder()
@@ -200,7 +197,7 @@ public class HttpRequester {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
+                    if (response.body() == null || TextUtils.isEmpty(haha)) {
                         FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
                         listener.onError(error);
 
@@ -211,7 +208,6 @@ public class HttpRequester {
                         Gson gson = new Gson();
 //                        BaseHttpResult result = gson.fromJson(jsonObject.getJSONArray("data").toString(), new TypeToken<BaseHttpResult>() {
 //                        }.getType());
-                        Log.e(TAG, "errMsg ===" + jsonObject.getString("msg"));
                         String result = gson.fromJson(jsonObject.getString("code"), new TypeToken<String>() {
                         }.getType());
                         listener.onResult(result);
@@ -272,10 +268,9 @@ public class HttpRequester {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String haha = response.body().string();
-                    if (response == null || response.body() == null || TextUtils.isEmpty(haha)) {
+                    if (response.body() == null || TextUtils.isEmpty(haha)) {
                         FaceError error = new FaceError(FaceError.ErrorCode.ACCESS_TOKEN_PARSE_ERROR, "token is parse error, please rerequest token");
                         listener.onError(error);
-
                     }
                     try {
                         JSONObject jsonObject = new JSONObject(haha);

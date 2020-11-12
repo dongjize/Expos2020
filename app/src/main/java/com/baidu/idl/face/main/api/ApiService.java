@@ -12,7 +12,7 @@ public class ApiService {
 
     private String accessToken;
 
-    private String groupId;
+//    private String groupId;
     private static volatile ApiService instance;
 
 
@@ -34,9 +34,9 @@ public class ApiService {
     }
 
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
+//    public void setGroupId(String groupId) {
+//        this.groupId = groupId;
+//    }
 
     /**
      * 设置accessToken 如何获取 accessToken 详情见:

@@ -51,7 +51,7 @@ public class StartActivity extends BaseActivity {
     }
 
     private void initApp() {
-        ApiService.getInstance().setGroupId(Config.groupID);
+//        ApiService.getInstance().setGroupId(Config.groupID);
         ApiService.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
