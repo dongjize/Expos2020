@@ -16,10 +16,10 @@ public class Config {
 //    public static String groupID = "expo1";
 //    public static String groupID = "user_01";
 
-//    public static String ORIGINAL_API_URL = "https://ai.exposdata.com/api";
-    public static String ORIGINAL_API_URL = "http://ai2.exposdata.com/api";
-//    public static String API_URL = "https://ai.exposdata.com/api";
-    public static String API_URL = "http://ai2.exposdata.com/api";
+    public static String ORIGINAL_API_URL = "https://ai.exposdata.com/api";
+//    public static String ORIGINAL_API_URL = "http://ai2.exposdata.com/api";
+    public static String API_URL = "https://ai.exposdata.com/api";
+//    public static String API_URL = "http://ai2.exposdata.com/api";
     public static String SECONDARY_API_URL = "https://5jyw.com:444/bdface/api";
 
     /*

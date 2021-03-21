@@ -141,8 +141,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
     private UsbManager mUsbManager;
     private static final String ACTION_USB_PERMISSION = "com.baidu.idl.face.USB_PERMISSION";
 
-    // --------------------
-
     private static final int VID = 1024;    //IDR VID
     private static final int PID = 50010;     //IDR PID
     private IDCardReader idCardReader = null;
@@ -154,16 +152,43 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
             String action = intent.getAction();
             Log.e("ACTION", action);
 
-            if (ACTION_USB_PERMISSION.equals(action)) {
-                synchronized (this) {
-                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+            UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            if (device.getVendorId() == VID && device.getProductId() == PID) {
+                switch (action) {
+                    case ACTION_USB_PERMISSION:
+                        synchronized (this) {
+                            if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                                openDevice();
+                            } else {
+                                toast("USB未授权");
+                            }
+                        }
+                        break;
+                    case UsbManager.ACTION_USB_DEVICE_ATTACHED: // 插入USB设备
+                        toast("IDReader ATTACHED");
                         openDevice();
-                    } else {
-                        Toast.makeText(mContext, "USB未授权", Toast.LENGTH_SHORT).show();
-                    }
+                        break;
+                    case UsbManager.ACTION_USB_DEVICE_DETACHED: // 拔出USB设备
+                        toast("IDReader DETACHED");
+                        closeDevice();
+                        break;
+                    default:
+                        break;
                 }
             }
+
+
+//            if (ACTION_USB_PERMISSION.equals(action)) {
+//                synchronized (this) {
+//                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+//                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+//                        openDevice();
+//                    } else {
+//                        Toast.makeText(mContext, "USB未授权", Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//            }
+
         }
     };
 
@@ -194,7 +219,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
         }
 
         registerReceiver();
-
         requestDevicePermission();
 
     }
@@ -222,105 +246,114 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
 
     private boolean authenticate() {
         try {
-            idCardReader.findCard(0); // TODO
-            idCardReader.selectCard(0);
-            return true;
+            if (idCardReader != null) {
+                idCardReader.findCard(0); // TODO
+                idCardReader.selectCard(0);
+                return true;
+            }
+            return false;
         } catch (IDCardReaderException e) {
             return false;
         }
     }
 
+    private Thread idReaderThread;
+
     private void openDevice() {
         try {
             startIDCardReader();
-            IDCardReaderExceptionListener listener = new IDCardReaderExceptionListener() {
-                @Override
-                public void OnException() {
-                    //出现异常，关闭设备
-//                    CloseDevice(); // TODO
-                }
-            };
+//            IDCardReaderExceptionListener listener = new IDCardReaderExceptionListener() {
+//                @Override
+//                public void OnException() {
+//                    //出现异常，关闭设备
+////                    CloseDevice(); // TODO
+//                }
+//            };
             idCardReader.open(0);
-            idCardReader.setIdCardReaderExceptionListener(listener);
-            new Thread(new Runnable() {
-                public void run() {
-                    while (true) {
-                        int retType = 0;
-                        try {
-                            if (authenticate()) {
-                                retType = idCardReader.readCardEx(0, 0);
+//            idCardReader.setIdCardReaderExceptionListener(listener);
+
+            if (idReaderThread == null) {
+                idReaderThread = new Thread(new Runnable() {
+                    public void run() {
+                        while (idCardReader != null) {
+                            int retType = 0;
+                            try {
+                                if (authenticate()) {
+                                    retType = idCardReader.readCardEx(0, 0);
+                                }
+                            } catch (IDCardReaderException e) {
+                                Log.e(TAG, e.toString());
                             }
-                        } catch (IDCardReaderException e) {
-                            Log.e(TAG, e.toString());
-                        }
-                        if (retType == 1 || retType == 2 || retType == 3) {
-                            isQrFaceDetect = false;
-                            pclass = "身份证比对";
+                            if (retType == 1 || retType == 2 || retType == 3) {
+                                isQrFaceDetect = false;
+                                pclass = "身份证比对";
 
-                            flushIDCardInfo(retType);
+                                flushIDCardInfo(retType);
 
-                            final IDCardInfo idCardInfo = idCardReader.getLastIDCardInfo();
+                                final IDCardInfo idCardInfo = idCardReader.getLastIDCardInfo();
 
-                            HttpRequester.requestUserById(new OnResultListener<List<User>>() {
-                                @Override
-                                public void onResult(List<User> result) {
-                                    checkable = true;
+                                HttpRequester.requestUserById(new OnResultListener<List<User>>() {
+                                    @Override
+                                    public void onResult(List<User> result) {
+                                        checkable = true;
 
-                                    if (result != null && result.size() > 0) {
-                                        if (mUser != null) {
-                                            lastUserIdNo = mUser.getIdCardNo();
-                                        }
+                                        if (result != null && result.size() > 0) {
+                                            if (mUser != null) {
+                                                lastUserIdNo = mUser.getIdCardNo();
+                                            }
 
-                                        // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
-                                        if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
-                                            mScanTime = 0;
-                                        }
-                                        mUser = result.get(0);
+                                            // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
+                                            if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
+                                                mScanTime = 0;
+                                            }
+                                            mUser = result.get(0);
 
-                                        if (idCardInfo.getPhoto() != null) {
-                                            byte[] buf = new byte[WLTService.imgLength];
-                                            WLTService.wlt2Bmp(idCardInfo.getPhoto(), buf);
-                                            mUserCloudPhoto = BitmapUtils.BGR2Bitmap(buf);
-                                            FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
+                                            if (idCardInfo.getPhoto() != null) {
+                                                byte[] buf = new byte[WLTService.imgLength];
+                                                WLTService.wlt2Bmp(idCardInfo.getPhoto(), buf);
+                                                mUserCloudPhoto = BitmapUtils.BGR2Bitmap(buf);
+                                                FaceSDKManager.getInstance().personDetect(mUserCloudPhoto, secondFeature);
 
-                                            if (TextUtils.isEmpty(mUser.getImage())) {
-                                                HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
-                                                    @Override
-                                                    public void onResult(String result) {
-                                                        Log.e(TAG, result);
-                                                        if (result.equals("0")) {
-                                                            // 如果更新成功，则人脸识别
-                                                            toast("上传证件照成功");
-                                                        } else {
-                                                            toast("上传证件照失败，errCode: " + result);
+                                                if (TextUtils.isEmpty(mUser.getImage())) {
+                                                    HttpRequester.uploadIDPhoto(new OnResultListener<String>() {
+                                                        @Override
+                                                        public void onResult(String result) {
+                                                            Log.e(TAG, result);
+                                                            if (result.equals("0")) {
+                                                                // 如果更新成功，则人脸识别
+                                                                toast("上传证件照成功");
+                                                            } else {
+                                                                toast("上传证件照失败，errCode: " + result);
+                                                            }
                                                         }
-                                                    }
 
-                                                    @Override
-                                                    public void onError(FaceError error) {
-                                                        Log.e(TAG, error.getErrorMessage());
-                                                        toast(error.getErrorMessage());
-                                                    }
-                                                }, mUserCloudPhoto, mUser);
+                                                        @Override
+                                                        public void onError(FaceError error) {
+                                                            Log.e(TAG, error.getErrorMessage());
+                                                            toast(error.getErrorMessage());
+                                                        }
+                                                    }, mUserCloudPhoto, mUser);
+                                                }
+                                            } else {
+                                                toast("身份证照片读取失败");
                                             }
                                         } else {
-                                            toast("身份证照片读取失败");
+                                            toast("该用户不存在");
+                                            Arrays.fill(secondFeature, (byte) 0);
                                         }
-                                    } else {
-                                        toast("该用户不存在");
-                                        Arrays.fill(secondFeature, (byte) 0);
                                     }
-                                }
 
-                                @Override
-                                public void onError(FaceError error) {
-                                    Log.e(TAG, "ERROR ===== " + error);
-                                }
-                            }, idCardInfo.getId());
+                                    @Override
+                                    public void onError(FaceError error) {
+                                        Log.e(TAG, "ERROR ===== " + error);
+                                    }
+                                }, idCardInfo.getId());
+                            }
                         }
                     }
-                }
-            }).start();
+                });
+            }
+            idReaderThread.start();
         } catch (IDCardReaderException e) {
             Log.e(TAG, e.toString());
         }
@@ -339,22 +372,24 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
     }
 
 
-//    private void CloseDevice() {
-//        if (!bOpen) {
-//            return;
-//        }
-//        bStopped = true;
-//        try {
-//            idCardReader.close(0);
-//        } catch (IDCardReaderException e) {
-//            e.printStackTrace();
-//        }
-//        bOpen = false;
-//    }
+    private void closeDevice() {
+        try {
+            if (idReaderThread != null) {
+                idReaderThread.interrupt();
+                idReaderThread = null;
+            }
+            if (idCardReader != null) {
+                idCardReader.close(0);
+                idCardReader = null;
+            }
+        } catch (IDCardReaderException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     private void unregisterReceiver() {
-//        mContext.unregisterReceiver(mUsbReceiver);
+        mContext.unregisterReceiver(mUsbReceiver);
     }
 
 
@@ -473,7 +508,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         unregisterReceiver(); // TODO
-
+        closeDevice();
         super.onDestroy();
     }
 
@@ -1035,6 +1070,9 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                         @Override
                         public void onResult(List<User> result) {
                             pclass = "人证核验";
+
+                            Log.e(TAG + "-------------", "" + result.toString());
+
                             if (result != null && result.size() > 0) {
 
                                 if (mUser != null) {
