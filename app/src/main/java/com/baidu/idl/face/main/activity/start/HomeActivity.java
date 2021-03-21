@@ -134,7 +134,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         RelativeLayout home_driveRl = findViewById(R.id.home_driveRl);
 //        home_driveRl.setOnClickListener(this);
         RelativeLayout home_attentionRl = findViewById(R.id.home_attentionRl);
-//        home_attentionRl.setOnClickListener(this);
+        home_attentionRl.setOnClickListener(this);
         ImageView home_faceTv = findViewById(R.id.home_faceTv);
         home_faceTv.setOnClickListener(this);
         ImageView home_faceLibraryTv = findViewById(R.id.home_faceLibraryTv);

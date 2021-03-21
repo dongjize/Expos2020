@@ -355,7 +355,7 @@ public class PlsyReaderActivity extends BaseActivity implements IReaderView, OnC
             public void run() {
                 super.run();
                 while (true) {
-                    final String audienceCode = vbar.getResultsingle();
+                    final String audienceCode = vbar.getResultSingle();
                     if (audienceCode != null) {
                         runOnUiThread(new Runnable() {
                             public void run() {

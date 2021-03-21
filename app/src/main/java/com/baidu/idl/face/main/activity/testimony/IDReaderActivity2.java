@@ -161,7 +161,6 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                         openDevice();
                     } else {
                         Toast.makeText(mContext, "USB未授权", Toast.LENGTH_SHORT).show();
-                        //mTxtReport.setText("USB未授权");
                     }
                 }
             }
@@ -1044,7 +1043,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
 
                                 // 如果两次身份证号不相同，或同一个user刷卡时间间隔3秒以上，则更新闸机open time
                                 if (lastUserIdNo != null && !lastUserIdNo.equals(result.get(0).getIdCardNo()) || System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
-                                    mScanTime = System.currentTimeMillis();
+                                    mScanTime = 0;
                                 }
                                 mUser = result.get(0);
                                 runOnUiThread(new Runnable() {

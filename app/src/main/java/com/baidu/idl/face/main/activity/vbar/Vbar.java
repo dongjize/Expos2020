@@ -94,7 +94,7 @@ public class Vbar {
 
 
     //接收结果
-    public String getResultsingle() {
+    public String getResultSingle() {
         byte[] bufferrecv = new byte[1024];
 
         Vbar.Vdll.INSTANCE.vbar_channel_recv(vbar_channel, bufferrecv, 1024, 200);

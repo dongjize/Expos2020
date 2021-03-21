@@ -49,7 +49,6 @@ import com.baidu.idl.face.main.utils.BitmapUtils;
 import com.baidu.idl.face.main.utils.DensityUtils;
 import com.baidu.idl.face.main.utils.FaceOnDrawTexturViewUtil;
 import com.baidu.idl.face.main.utils.OnResultListener;
-import com.baidu.idl.face.main.utils.Utils;
 import com.baidu.idl.face.main.view.PreviewTexture;
 import com.baidu.idl.main.facesdk.FaceInfo;
 import com.baidu.idl.main.facesdk.model.BDFaceImageInstance;
@@ -169,7 +168,7 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
                     Intent intent = new Intent(ACTION_USB_PERMISSION);
                     PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
                     mUsbManager.requestPermission(device, mPermissionIntent);
-                    Log.d(TAG, "QRCode device: checked");
+                    Log.d(TAG, "IDCard device: checked");
                 }
             }
         }
@@ -331,12 +330,13 @@ public class IDReaderActivity extends BaseActivity implements View.OnClickListen
     private void initVBar() {
         vbar = new Vbar();
         state = vbar.vbarOpen();
+        Log.e("VBAR STATE: ", state + "");
         vbarThread = new Thread() {
             @Override
             public void run() {
                 super.run();
                 while (true) {
-                    final String audienceCode = vbar.getResultsingle();
+                    final String audienceCode = vbar.getResultSingle();
                     if (audienceCode != null && System.currentTimeMillis() - mScanTime > USER_SCAN_INTERVAL) {
 
                         checkable = true;

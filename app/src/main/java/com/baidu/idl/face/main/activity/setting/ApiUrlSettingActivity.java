@@ -28,7 +28,7 @@ public class ApiUrlSettingActivity extends BaseActivity {
         button = findViewById(R.id.btnConfirm);
         resetBtn = findViewById(R.id.btnReset);
 
-        editText.setHint(Config.API_URL);
+        editText.setText(Config.API_URL);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +60,7 @@ public class ApiUrlSettingActivity extends BaseActivity {
                 Config.API_URL = Config.ORIGINAL_API_URL;
                 Toast.makeText(ApiUrlSettingActivity.this,
                         "恢复默认：" + Config.ORIGINAL_API_URL, Toast.LENGTH_LONG).show();
-                editText.setHint(Config.API_URL);
+                editText.setText(Config.API_URL);
 
             }
         });

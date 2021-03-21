@@ -23,6 +23,7 @@
 				android:scrollbarStyle="insideOverlay"
 				android:fadeScrollbars="false"
 				android:scrollbarFadeDuration="2000"
+				android:textColor="@color/red"
 		        android:ems="10" >
 		
 		    </EditText>

@@ -101,7 +101,6 @@ public class VBarActivity extends BaseActivity {
         });
         decodestart = (Button) findViewById(R.id.begindecode);
         decodestart.setOnClickListener(new OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 Thread t = new Thread() {
@@ -109,7 +108,7 @@ public class VBarActivity extends BaseActivity {
                     public void run() {
                         super.run();
                         while (true) {
-                            final String str = b.getResultsingle();
+                            final String str = b.getResultSingle();
                             if (str != null) {
                                 runOnUiThread(new Runnable() {
                                     public void run() {
