@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,7 +16,7 @@ import com.baidu.idl.face.main.R;
 public class ApiUrlSettingActivity extends BaseActivity {
 
     private EditText editText;
-    private Button button, resetBtn;
+    private Button confirmBtn, resetBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -25,12 +24,12 @@ public class ApiUrlSettingActivity extends BaseActivity {
         setContentView(R.layout.activity_api_url_setting);
 
         editText = findViewById(R.id.etApiUrl);
-        button = findViewById(R.id.btnConfirm);
+        confirmBtn = findViewById(R.id.btnConfirm);
         resetBtn = findViewById(R.id.btnReset);
 
         editText.setText(Config.API_URL);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (editText.getText() != null) {
@@ -38,13 +37,10 @@ public class ApiUrlSettingActivity extends BaseActivity {
                     SharedPreferences.Editor editor = sp.edit();
                     editor.putString("api_url", editText.getText().toString());
                     editor.apply();
-                    Toast.makeText(ApiUrlSettingActivity.this,
-                            editText.getText().toString(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(ApiUrlSettingActivity.this, editText.getText().toString(), Toast.LENGTH_LONG).show();
                     Config.API_URL = editText.getText().toString();
-
                 } else {
-                    Toast.makeText(ApiUrlSettingActivity.this,
-                            "url不能为空", Toast.LENGTH_LONG).show();
+                    Toast.makeText(ApiUrlSettingActivity.this, "url不能为空", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -56,10 +52,8 @@ public class ApiUrlSettingActivity extends BaseActivity {
                 SharedPreferences.Editor editor = sp.edit();
                 editor.putString("api_url", Config.ORIGINAL_API_URL);
                 editor.apply();
-
                 Config.API_URL = Config.ORIGINAL_API_URL;
-                Toast.makeText(ApiUrlSettingActivity.this,
-                        "恢复默认：" + Config.ORIGINAL_API_URL, Toast.LENGTH_LONG).show();
+                Toast.makeText(ApiUrlSettingActivity.this, "恢复默认：" + Config.ORIGINAL_API_URL, Toast.LENGTH_LONG).show();
                 editText.setText(Config.API_URL);
 
             }
