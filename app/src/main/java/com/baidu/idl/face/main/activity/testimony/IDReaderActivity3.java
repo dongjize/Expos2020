@@ -55,7 +55,6 @@ import com.zkteco.android.IDReader.WLTService;
 import com.zkteco.android.biometric.core.device.ParameterHelper;
 import com.zkteco.android.biometric.core.device.TransportType;
 import com.zkteco.android.biometric.module.idcard.IDCardReader;
-import com.zkteco.android.biometric.module.idcard.IDCardReaderExceptionListener;
 import com.zkteco.android.biometric.module.idcard.IDCardReaderFactory;
 import com.zkteco.android.biometric.module.idcard.exception.IDCardReaderException;
 import com.zkteco.android.biometric.module.idcard.meta.IDCardInfo;
@@ -68,8 +67,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IDReaderActivity2 extends BaseActivity implements View.OnClickListener, ScanGun.ScanGunCallBack {
-    private static final String TAG = IDReaderActivity2.class.getSimpleName();
+public class IDReaderActivity3 extends BaseActivity implements View.OnClickListener, ScanGun.ScanGunCallBack {
+    private static final String TAG = IDReaderActivity3.class.getSimpleName();
 
     private byte[] firstFeature = new byte[512]; //现场采集feature
     private byte[] secondFeature = new byte[512]; //身份证照片feature
@@ -604,9 +603,8 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                             } else {
                                                 rgbLivenessScore = livenessModel.getRgbLivenessScore();
                                                 nirLivenessScore = livenessModel.getIrLivenessScore();
-                                                if (rgbLivenessScore > rgbLiveScore && nirLivenessScore >
-                                                        nirLiveScore) {
-                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
+                                                if (rgbLivenessScore > rgbLiveScore && nirLivenessScore > nirLiveScore) {
+//                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
                                                         BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
 
                                                         if (image != null) {
@@ -624,12 +622,12 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                                             image.destory();
                                                         }
 
-                                                    } else {
-                                                        livenessTipsFailTv.setText("人证核验未通过");
-                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
-                                                        livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
-                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
-                                                    }
+//                                                    } else {
+//                                                        livenessTipsFailTv.setText("人证核验未通过");
+//                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+//                                                        livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
+//                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+//                                                    }
                                                 } else {
                                                     livenessTipsFailTv.setText("人证核验未通过");
                                                     livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));

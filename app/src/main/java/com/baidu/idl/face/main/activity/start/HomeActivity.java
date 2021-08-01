@@ -30,6 +30,7 @@ import com.baidu.idl.face.main.activity.scangun.ScanGunActivity;
 import com.baidu.idl.face.main.activity.setting.SettingMainActivity;
 import com.baidu.idl.face.main.activity.testimony.IDReaderActivity;
 import com.baidu.idl.face.main.activity.testimony.IDReaderActivity2;
+import com.baidu.idl.face.main.activity.testimony.IDReaderActivity3;
 import com.baidu.idl.face.main.activity.user.UserManagerActivity;
 import com.baidu.idl.face.main.activity.vbar.VBarActivity;
 import com.baidu.idl.face.main.activity.view.PlsyReaderActivity;
@@ -195,10 +196,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-//                judgeLiveType(mLiveType,
-//                        FaceRGBAttendanceActivity.class,
-//                        FaceNIRAttendanceActivity.class,
-//                        FaceDepthAttendanceActivity.class);
                 startActivity(new Intent(HomeActivity.this, ZKIDReaderActivity.class));
                 break;
             case R.id.home_payRl:
@@ -206,26 +203,21 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-                startActivity(new Intent(HomeActivity.this, IDReaderActivity2.class));
-//                judgeLiveType(mLiveType,
-//                        FaceRGBPaymentActivity.class,
-//                        FaceNIRPaymentActivity.class,
-//                        FaceDepthPaymentActivity.class);
+                startActivity(new Intent(HomeActivity.this, IDReaderActivity2.class)); // 中控+小二维码
                 break;
             case R.id.home_attributeRl:
                 // 属性模块
                 if (!initSuccess()) {
                     return;
                 }
-//                startActivity(new Intent(HomeActivity.this, FaceAttributeActivity.class));
-                startActivity(new Intent(HomeActivity.this, ScanGunActivity.class));
+                startActivity(new Intent(HomeActivity.this, IDReaderActivity3.class)); // 中控+小二维码（简化）
                 break;
             case R.id.home_personRl:
                 // 人证核验
                 if (!initSuccess()) {
                     return;
                 }
-                startActivity(new Intent(HomeActivity.this, IDReaderActivity.class));
+                startActivity(new Intent(HomeActivity.this, IDReaderActivity.class)); // 白色+大二维码
                 break;
             case R.id.home_driveRl:
                 // 驾驶行为模块
@@ -233,11 +225,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                     return;
                 }
                 startActivity(new Intent(HomeActivity.this, PlsyReaderActivity.class));
-//                if (SingleBaseConfig.getBaseConfig().getType() == 3) {
-//                    startActivity(new Intent(HomeActivity.this, DriverMonitorActivity.class));
-//                } else {
-//                    Toast.makeText(this, "只有活体检测模态选择RGB+NIR活体时才可使用", Toast.LENGTH_LONG).show();
-//                }
                 break;
             case R.id.home_attentionRl:
                 // 注意力模块
