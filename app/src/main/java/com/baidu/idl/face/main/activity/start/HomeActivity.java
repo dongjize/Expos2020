@@ -31,6 +31,7 @@ import com.baidu.idl.face.main.activity.setting.SettingMainActivity;
 import com.baidu.idl.face.main.activity.testimony.IDReaderActivity;
 import com.baidu.idl.face.main.activity.testimony.IDReaderActivity2;
 import com.baidu.idl.face.main.activity.testimony.IDReaderActivity3;
+import com.baidu.idl.face.main.activity.testimony.IDReaderActivity4;
 import com.baidu.idl.face.main.activity.user.UserManagerActivity;
 import com.baidu.idl.face.main.activity.vbar.VBarActivity;
 import com.baidu.idl.face.main.activity.view.PlsyReaderActivity;
@@ -133,7 +134,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         home_personRl = findViewById(R.id.home_personRl);
         home_personRl.setOnClickListener(this);
         RelativeLayout home_driveRl = findViewById(R.id.home_driveRl);
-//        home_driveRl.setOnClickListener(this);
+        home_driveRl.setOnClickListener(this);
         RelativeLayout home_attentionRl = findViewById(R.id.home_attentionRl);
         home_attentionRl.setOnClickListener(this);
         ImageView home_faceTv = findViewById(R.id.home_faceTv);
@@ -224,7 +225,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 if (!initSuccess()) {
                     return;
                 }
-                startActivity(new Intent(HomeActivity.this, PlsyReaderActivity.class));
+                startActivity(new Intent(HomeActivity.this, IDReaderActivity4.class)); // 白色+小二维码（04）
                 break;
             case R.id.home_attentionRl:
                 // 注意力模块

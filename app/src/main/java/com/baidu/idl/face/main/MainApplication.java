@@ -28,7 +28,7 @@ public class MainApplication extends Application {
         app = this;
         okHttpClient = new OkHttpClient();
         SharedPreferences sp = getSharedPreferences("api_url", Context.MODE_PRIVATE);
-        Config.API_URL = sp.getString("api_url", Config.API_URL);
+        Config.DOMAIN = sp.getString("api_url", Config.DOMAIN);
     }
 
     @Override

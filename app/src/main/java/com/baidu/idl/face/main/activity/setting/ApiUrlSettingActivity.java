@@ -27,7 +27,7 @@ public class ApiUrlSettingActivity extends BaseActivity {
         confirmBtn = findViewById(R.id.btnConfirm);
         resetBtn = findViewById(R.id.btnReset);
 
-        editText.setText(Config.API_URL);
+        editText.setText(Config.DOMAIN);
 
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,7 +38,7 @@ public class ApiUrlSettingActivity extends BaseActivity {
                     editor.putString("api_url", editText.getText().toString());
                     editor.apply();
                     Toast.makeText(ApiUrlSettingActivity.this, editText.getText().toString(), Toast.LENGTH_LONG).show();
-                    Config.API_URL = editText.getText().toString();
+                    Config.DOMAIN = editText.getText().toString();
                 } else {
                     Toast.makeText(ApiUrlSettingActivity.this, "url不能为空", Toast.LENGTH_LONG).show();
                 }
@@ -50,11 +50,11 @@ public class ApiUrlSettingActivity extends BaseActivity {
             public void onClick(View view) {
                 SharedPreferences sp = getSharedPreferences("api_url", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sp.edit();
-                editor.putString("api_url", Config.ORIGINAL_API_URL);
+                editor.putString("api_url", Config.ORIGINAL_DOMAIN);
                 editor.apply();
-                Config.API_URL = Config.ORIGINAL_API_URL;
-                Toast.makeText(ApiUrlSettingActivity.this, "恢复默认：" + Config.ORIGINAL_API_URL, Toast.LENGTH_LONG).show();
-                editText.setText(Config.API_URL);
+                Config.DOMAIN = Config.ORIGINAL_DOMAIN;
+                Toast.makeText(ApiUrlSettingActivity.this, "恢复默认：" + Config.ORIGINAL_DOMAIN, Toast.LENGTH_LONG).show();
+                editText.setText(Config.DOMAIN);
 
             }
         });

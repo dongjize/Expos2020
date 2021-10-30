@@ -50,12 +50,12 @@ import com.baidu.idl.face.main.view.PreviewTexture;
 import com.baidu.idl.main.facesdk.FaceInfo;
 import com.baidu.idl.main.facesdk.model.BDFaceImageInstance;
 import com.baidu.idl.main.facesdk.model.BDFaceSDKCommon;
+import com.bumptech.glide.Glide;
 import com.zkteco.android.IDReader.IDPhotoHelper;
 import com.zkteco.android.IDReader.WLTService;
 import com.zkteco.android.biometric.core.device.ParameterHelper;
 import com.zkteco.android.biometric.core.device.TransportType;
 import com.zkteco.android.biometric.module.idcard.IDCardReader;
-import com.zkteco.android.biometric.module.idcard.IDCardReaderExceptionListener;
 import com.zkteco.android.biometric.module.idcard.IDCardReaderFactory;
 import com.zkteco.android.biometric.module.idcard.exception.IDCardReaderException;
 import com.zkteco.android.biometric.module.idcard.meta.IDCardInfo;
@@ -68,8 +68,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IDReaderActivity2 extends BaseActivity implements View.OnClickListener, ScanGun.ScanGunCallBack {
-    private static final String TAG = IDReaderActivity2.class.getSimpleName();
+public class IDReaderActivity4 extends BaseActivity implements View.OnClickListener, ScanGun.ScanGunCallBack {
+    private static final String TAG = IDReaderActivity4.class.getSimpleName();
 
     private byte[] firstFeature = new byte[512]; //现场采集feature
     private byte[] secondFeature = new byte[512]; //身份证照片feature
@@ -605,30 +605,30 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                                 rgbLivenessScore = livenessModel.getRgbLivenessScore();
                                                 nirLivenessScore = livenessModel.getIrLivenessScore();
                                                 if (rgbLivenessScore > rgbLiveScore && nirLivenessScore > nirLiveScore) {
-                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
-                                                        BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
+//                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
+                                                    BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
 
-                                                        if (image != null) {
-                                                            Bitmap livePhoto = BitmapUtils.scale(BitmapUtils.getInstaceBmp(image), 0.3F);
-                                                            if (livePhotoIv.getDrawable() == null) {
-                                                                livePhotoIv.setImageBitmap(livePhoto);
-                                                            }
-                                                            livenessTipsFailTv.setText("人证核验通过");
-                                                            livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
-                                                            livenessTipsPleaseFailTv.setText("识别成功");
-                                                            livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
-                                                            if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
-                                                                openDoor(mUser.getItemEId(), pclass, livePhoto);
-                                                            }
-                                                            image.destory();
+                                                    if (image != null) {
+                                                        Bitmap livePhoto = BitmapUtils.scale(BitmapUtils.getInstaceBmp(image), 0.3F);
+                                                        if (livePhotoIv.getDrawable() == null) {
+                                                            livePhotoIv.setImageBitmap(livePhoto);
                                                         }
-
-                                                    } else {
-                                                        livenessTipsFailTv.setText("人证核验未通过");
-                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
-                                                        livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
-                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+                                                        livenessTipsFailTv.setText("人证核验通过");
+                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
+                                                        livenessTipsPleaseFailTv.setText("识别成功");
+                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
+                                                        if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
+                                                            openDoor(mUser.getItemEId(), pclass, livePhoto);
+                                                        }
+                                                        image.destory();
                                                     }
+
+//                                                    } else {
+//                                                        livenessTipsFailTv.setText("人证核验未通过");
+//                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
+//                                                        livenessTipsPleaseFailTv.setText("请上传正面人脸照片");
+//                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_fail);
+//                                                    }
                                                 } else {
                                                     livenessTipsFailTv.setText("人证核验未通过");
                                                     livenessTipsFailTv.setTextColor(Color.parseColor("#FFFEC133"));
@@ -1082,6 +1082,7 @@ public class IDReaderActivity2 extends BaseActivity implements View.OnClickListe
                                 });
 
                                 if (!TextUtils.isEmpty(mUser.getImage())) {
+
                                     mUserCloudPhoto = BitmapUtils.base64ToBitmap(mUser.getImage());
                                     runOnUiThread(new Runnable() {
                                         @Override

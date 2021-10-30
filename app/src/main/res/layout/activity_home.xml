@@ -284,7 +284,7 @@
                     android:layout_alignBottom="@id/home_driveIv"
                     android:layout_marginLeft="15dp"
                     android:layout_marginBottom="31dp"
-                    android:text="@string/home_drive"
+                    android:text="@string/home_expos_3"
                     android:textColor="@color/white"
                     android:textSize="@dimen/home_tv" />
 

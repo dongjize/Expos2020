@@ -113,10 +113,11 @@
     <string name="home_check">考勤模式</string>
     <string name="home_check_english">ATTENDANCE MODE</string>
     <string name="home_pay">支付模式</string>
+    <string name="home_expos_3">中控+小二维码(04)</string>
+    <string name="home_attribute">中控+小二维码(简化)</string>
     <string name="home_expos_2">中控+小二维码</string>
     <string name="home_expos_1">白色+大二维码</string>
     <string name="home_pay_english">PAYMENT MODE</string>home_checkTv
-    <string name="home_attribute">中控+小二维码(简化)</string>
     <string name="home_attribute_english">ATTRIBUTE MODE</string>home_checkTv
     <string name="home_person">人证核验</string>
     <string name="home_person_english">CERTIFICATES</string>home_checkTv

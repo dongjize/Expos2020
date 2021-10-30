@@ -605,22 +605,22 @@ public class IDReaderActivity3 extends BaseActivity implements View.OnClickListe
                                                 nirLivenessScore = livenessModel.getIrLivenessScore();
                                                 if (rgbLivenessScore > rgbLiveScore && nirLivenessScore > nirLiveScore) {
 //                                                    if (score > SingleBaseConfig.getBaseConfig().getIdThreshold()) {
-                                                        BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
+                                                    BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
 
-                                                        if (image != null) {
-                                                            Bitmap livePhoto = BitmapUtils.scale(BitmapUtils.getInstaceBmp(image), 0.3F);
-                                                            if (livePhotoIv.getDrawable() == null) {
-                                                                livePhotoIv.setImageBitmap(livePhoto);
-                                                            }
-                                                            livenessTipsFailTv.setText("人证核验通过");
-                                                            livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
-                                                            livenessTipsPleaseFailTv.setText("识别成功");
-                                                            livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
-                                                            if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
-                                                                openDoor(mUser.getItemEId(), pclass, livePhoto);
-                                                            }
-                                                            image.destory();
+                                                    if (image != null) {
+                                                        Bitmap livePhoto = BitmapUtils.scale(BitmapUtils.getInstaceBmp(image), 0.3F);
+                                                        if (livePhotoIv.getDrawable() == null) {
+                                                            livePhotoIv.setImageBitmap(livePhoto);
                                                         }
+                                                        livenessTipsFailTv.setText("人证核验通过");
+                                                        livenessTipsFailTv.setTextColor(Color.parseColor("#FF00BAF2"));
+                                                        livenessTipsPleaseFailTv.setText("识别成功");
+                                                        livenessTipsFailIv.setImageResource(R.mipmap.tips_success);
+                                                        if (System.currentTimeMillis() - mLastOpenTime >= USER_SCAN_INTERVAL) {
+                                                            openDoor(mUser.getItemEId(), pclass, livePhoto);
+                                                        }
+                                                        image.destory();
+                                                    }
 
 //                                                    } else {
 //                                                        livenessTipsFailTv.setText("人证核验未通过");
@@ -885,6 +885,8 @@ public class IDReaderActivity3 extends BaseActivity implements View.OnClickListe
             case R.id.btn_setting:
                 startActivity(new Intent(mContext, SettingMainActivity.class));
                 finish();
+                break;
+            default:
                 break;
 
         }
